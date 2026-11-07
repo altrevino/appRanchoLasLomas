@@ -4,7 +4,7 @@
  */
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { CabezaVenado } from '../../components/CabezaVenado';
+import { CabezaVenado } from '../../components/logo';
 import { Boton, Chip, Encabezado, Etiqueta, Filete, Titulo } from '../../components/consulta';
 import { borde, espacio, radio, temas, tipografia } from '../../theme';
 

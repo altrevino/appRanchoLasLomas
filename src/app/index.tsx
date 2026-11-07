@@ -6,8 +6,8 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CabezaVenado } from '../components/CabezaVenado';
-import { Boton, Filete, Titulo } from '../components/consulta';
+import { LogoCompleto } from '../components/logo';
+import { Boton } from '../components/consulta';
 import { espacio, temas, tipografia } from '../theme';
 
 const t = temas.consulta;
@@ -17,10 +17,7 @@ export default function Inicio() {
     <SafeAreaView style={estilos.raiz}>
       <StatusBar style={t.barraEstado} />
       <View style={estilos.logo}>
-        {/* Marcador de posición del logotipo completo */}
-        <CabezaVenado tamano={120} color={t.primario} />
-        <Titulo nivel={0} centrado>RANCHO LAS LOMAS</Titulo>
-        <Filete style={{ width: 120 }} />
+        <LogoCompleto ancho={320} />
       </View>
       <View style={estilos.acciones}>
         <Text style={[tipografia.secundario, { color: t.textoSecundario, textAlign: 'center' }]}>

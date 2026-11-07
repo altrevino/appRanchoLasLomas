@@ -102,7 +102,7 @@ export const tamanos = {
   botonConsulta: 52,
   /** Mínimo de los botones de captura en modo campo. */
   botonCampoMinimo: 80,
-  cabezaVenadoEncabezado: 28,
+  cabezaVenadoEncabezado: 34,
   marcadorEspiadero: 36,
 } as const;
 

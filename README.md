@@ -8,6 +8,7 @@ App interna (iPhone, Expo + Supabase) para el mapa del rancho, censo simultáneo
 - Contraste WCAG AA de todos los pares texto/fondo: `npm run contraste`.
 - Pantallas de muestra: `src/app/muestras/ficha.tsx` (consulta) y `src/app/muestras/captura.tsx` (campo).
 - Capturas de pantalla: `docs/muestras/`.
+- Logotipo oficial: `assets/logo/logo-completo.svg`. Si cambia, correr `npm run logo` (trazos para la app) y `npm run iconos` (ícono, splash, favicon).
 
 ## Correr en local
 

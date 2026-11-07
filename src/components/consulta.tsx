@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borde, espacio, radio, tamanos, temas, tipografia } from '../theme';
-import { CabezaVenado } from './CabezaVenado';
+import { CabezaVenado } from './logo';
 
 const t = temas.consulta;
 
