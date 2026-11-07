@@ -3,32 +3,49 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SesionProvider, useSesion } from '../lib/sesion';
 import { temas } from '../theme';
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function Rutas() {
+  const { cargando, perfil } = useSesion();
   const [fuentesListas, error] = useFonts({ Cinzel_600SemiBold, Cinzel_700Bold });
+  const listo = !cargando && (fuentesListas || !!error);
 
   useEffect(() => {
-    if (fuentesListas || error) SplashScreen.hideAsync();
-  }, [fuentesListas, error]);
+    if (listo) SplashScreen.hideAsync();
+  }, [listo]);
 
-  if (!fuentesListas && !error) return null;
+  if (!listo) return null;
 
   return (
-    <SafeAreaProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: temas.consulta.fondo },
-        }}
-      >
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: temas.consulta.fondo } }}>
+      <Stack.Screen name="index" />
+      <Stack.Protected guard={!perfil}>
+        <Stack.Screen name="acceso" />
+      </Stack.Protected>
+      <Stack.Protected guard={!!perfil}>
+        <Stack.Screen name="(app)" />
+      </Stack.Protected>
+      {/* Pantallas de muestra del diseño: solo en desarrollo */}
+      <Stack.Protected guard={__DEV__}>
+        <Stack.Screen name="muestras/ficha" />
         <Stack.Screen
           name="muestras/captura"
           options={{ contentStyle: { backgroundColor: temas.campo.fondo }, gestureEnabled: false }}
         />
-      </Stack>
+      </Stack.Protected>
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <SafeAreaProvider>
+      <SesionProvider>
+        <Rutas />
+      </SesionProvider>
     </SafeAreaProvider>
   );
 }

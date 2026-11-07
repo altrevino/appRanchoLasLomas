@@ -8,7 +8,13 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "mx.rancholaslomas.app"
+      "bundleIdentifier": "mx.rancholaslomas.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -26,17 +32,28 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-splash-screen",
-      "@maplibre/maplibre-react-native"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 240,
+          "resizeMode": "contain",
+          "backgroundColor": "#F6F2EA"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "La app usa tu ubicación para mostrarte en el mapa del rancho y detectar en qué espiadero estás durante el censo."
+        }
+      ],
+      "@maplibre/maplibre-react-native",
+      "expo-dev-client"
     ],
     "scheme": "rancholaslomas",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F6F2EA"
-    },
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {}
   }
 }
