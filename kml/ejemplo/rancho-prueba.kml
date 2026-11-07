@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+<name>Rancho de prueba (ficticio)</name>
+<description>Rancho ficticio en el noreste de México para probar la app. Se reemplaza con el KML real.</description>
+<Folder><name>Lindero</name><Placemark><name>Lindero</name><Polygon><outerBoundaryIs><LinearRing><coordinates>-100.118000,26.605000,0 -100.096901,26.602738,0 -100.074798,26.603914,0 -100.055709,26.607714,0 -100.052695,26.624902,0 -100.057718,26.643900,0 -100.076808,26.650232,0 -100.095897,26.647519,0 -100.111972,26.642995,0 -100.121014,26.627616,0 -100.118000,26.605000,0</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></Folder>
+<Folder><name>Caminos</name>
+<Placemark><name>Camino principal</name><LineString><coordinates>-100.121014,26.627616,0 -100.105944,26.626259,0 -100.089869,26.625355,0 -100.072789,26.628069,0 -100.052695,26.624902,0</coordinates></LineString></Placemark>
+<Placemark><name>Brecha norte</name><LineString><coordinates>-100.105944,26.626259,0 -100.099916,26.634853,0 -100.095897,26.647519,0</coordinates></LineString></Placemark>
+<Placemark><name>Brecha sur</name><LineString><coordinates>-100.089869,26.625355,0 -100.092883,26.615856,0 -100.096901,26.602738,0</coordinates></LineString></Placemark>
+<Placemark><name>Brecha de la sierra</name><LineString><coordinates>-100.072789,26.628069,0 -100.064751,26.614046,0 -100.074798,26.603914,0</coordinates></LineString></Placemark>
+</Folder><Folder><name>Espiaderos</name>
+<Placemark><name>La Noria</name><Point><coordinates>-100.108958,26.613142,312</coordinates></Point></Placemark>
+<Placemark><name>El Mezquite</name><Point><coordinates>-100.094892,26.611333,318</coordinates></Point></Placemark>
+<Placemark><name>Loma Alta</name><Point><coordinates>-100.079822,26.616760,356</coordinates></Point></Placemark>
+<Placemark><name>El Ébano</name><Point><coordinates>-100.064751,26.614046,331</coordinates></Point></Placemark>
+<Placemark><name>Los Cenizos</name><Point><coordinates>-100.105944,26.626712,327</coordinates></Point></Placemark>
+<Placemark><name>La Represa</name><Point><coordinates>-100.089869,26.625807,309</coordinates></Point></Placemark>
+<Placemark><name>El Huizache</name><Point><coordinates>-100.072789,26.628521,342</coordinates></Point></Placemark>
+<Placemark><name>Cerro Prieto</name><Point><coordinates>-100.061737,26.636663,401</coordinates></Point></Placemark>
+<Placemark><name>La Tinaja</name><Point><coordinates>-100.099916,26.640281,334</coordinates></Point></Placemark>
+<Placemark><name>El Chaparral</name><Point><coordinates>-100.082836,26.640281,348</coordinates></Point></Placemark>
+</Folder>
+</Document>
+</kml>
