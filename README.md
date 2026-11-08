@@ -188,6 +188,7 @@ npm run importar-kml -- --aplicar
 | `npm run importar-kml` | Vista previa del KML en `kml/` |
 | `npm run importar-kml -- --aplicar` | Guardar el KML |
 | `npm run cargar-prueba` | Cargar el rancho ficticio |
+| `npm run probar-servidor` | Probar contra el Supabase real (admin temporal, código, invitado, permisos; limpia al final) |
 | `npm test` | Pruebas del lector de KML y cálculos de distancia |
 | `npm run test:db` | Pruebas de la base de datos (requiere Postgres con PostGIS local) |
 | `npm run contraste` | Verificar contraste de colores (WCAG AA) |
