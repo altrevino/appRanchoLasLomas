@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Boton, Encabezado, Etiqueta, Titulo } from '../../components/consulta';
+import { esAppInstalada } from '../../lib/enlaces';
 import { useSesion } from '../../lib/sesion';
 import { espacio, temas, tipografia } from '../../theme';
 
@@ -27,6 +28,17 @@ export default function Cuenta() {
             </Text>
           </View>
         ) : null}
+        {!esAppInstalada() ? (
+          <View style={estilos.instalar}>
+            <Etiqueta>Tenerla como app en el iPhone</Etiqueta>
+            <Text style={[tipografia.cuerpo, { color: t.texto }]}>
+              1. Abre esta página en Safari.{'\n'}2. Toca el botón Compartir (cuadro con flecha hacia arriba).{'\n'}3. Elige «Agregar a pantalla de inicio».
+            </Text>
+            <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>
+              Así abre a pantalla completa, funciona mejor sin señal y puede recibir avisos de inicio de censo.
+            </Text>
+          </View>
+        ) : null}
         <Boton
           variante="peligro"
           onPress={async () => {
@@ -44,4 +56,5 @@ export default function Cuenta() {
 const estilos = StyleSheet.create({
   raiz: { flex: 1, backgroundColor: t.fondo },
   contenido: { padding: espacio.xl, gap: espacio.xl },
+  instalar: { gap: espacio.s, padding: espacio.l, borderWidth: 1, borderColor: t.acento, borderRadius: 8, backgroundColor: t.superficie },
 });

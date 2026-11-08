@@ -81,6 +81,15 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!activo) return;
       setSesion(data.session);
+      // Abrir de inmediato con el perfil guardado (sirve sin señal) y validarlo en segundo plano.
+      const guardado = await AsyncStorage.getItem(CLAVE_PERFIL).catch(() => null);
+      const previo = guardado ? (JSON.parse(guardado) as Perfil) : null;
+      if (data.session && previo && previo.id === data.session.user.id && vigente(previo)) {
+        setPerfil(previo);
+        setCargando(false);
+        cargarPerfil(data.session);
+        return;
+      }
       await cargarPerfil(data.session);
       setCargando(false);
     });

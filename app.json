@@ -27,7 +27,14 @@
       "package": "mx.rancholaslomas.app"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "output": "single",
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "name": "Las Lomas",
+      "shortName": "Las Lomas",
+      "lang": "es-MX",
+      "themeColor": "#F6F2EA",
+      "backgroundColor": "#F6F2EA"
     },
     "plugins": [
       "expo-router",

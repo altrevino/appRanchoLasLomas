@@ -8,6 +8,7 @@
  * - assets/splash-icon.png: logotipo completo, fondo transparente (el splash
  *   pone el fondo hueso desde app.json).
  * - assets/favicon.png
+ * - public/iconos/*: íconos de la web app (pantalla de inicio del iPhone)
  */
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -59,5 +60,11 @@ async function render(page, svg, w, h, archivo) {
   const s = svgCompleto(1024);
   await render(p, s.svg, 1024, s.alto, 'splash-icon.png');
   await render(p, svgVenado({ lado: 48, escala: 0.86, fondo: BOSQUE, color: ARENA }), 48, 48, 'favicon.png');
+  // Web app (iPhone "Agregar a pantalla de inicio" y navegadores)
+  fs.mkdirSync(path.join(raiz, 'public/iconos'), { recursive: true });
+  await render(p, svgVenado({ lado: 180, escala: 0.72, fondo: BOSQUE, color: ARENA }), 180, 180, '../public/iconos/apple-touch-icon.png');
+  await render(p, svgVenado({ lado: 192, escala: 0.66, fondo: BOSQUE, color: ARENA }), 192, 192, '../public/iconos/icono-192.png');
+  await render(p, svgVenado({ lado: 512, escala: 0.66, fondo: BOSQUE, color: ARENA }), 512, 512, '../public/iconos/icono-512.png');
+  await render(p, svgVenado({ lado: 48, escala: 0.86, fondo: BOSQUE, color: ARENA }), 48, 48, '../public/iconos/favicon-48.png');
   await b.close();
 })();

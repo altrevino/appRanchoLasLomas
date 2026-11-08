@@ -2,11 +2,11 @@
  * Códigos de invitado: generar (con QR), ver vigentes, revocar; invitados activos.
  */
 import * as Clipboard from 'expo-clipboard';
-import * as Linking from 'expo-linking';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Aviso, Boton, Campo, Encabezado, Etiqueta, Fila, Opcion, Titulo } from '../../../components/consulta';
+import { enlaceInvitado } from '../../../lib/enlaces';
 import { mensajeDeError, supabase } from '../../../lib/supabase';
 import { borde, espacio, paleta, radio, temas, tipografia } from '../../../theme';
 
@@ -41,8 +41,6 @@ const limites = [
 
 const fecha = (iso: string) => new Date(iso).toLocaleString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 
-/** Enlace que abre la app con el código escrito (lo que codifica el QR). */
-export const enlaceCodigo = (codigo: string) => Linking.createURL('/acceso/invitado', { queryParams: { codigo } });
 
 function consultar() {
   const ahora = new Date().toISOString();
@@ -111,10 +109,10 @@ export default function Codigos() {
               {nuevo.codigo.slice(0, 3)} {nuevo.codigo.slice(3)}
             </Text>
             <View style={estilos.qr}>
-              <QRCode value={enlaceCodigo(nuevo.codigo)} size={200} color={paleta.verdeBosque} backgroundColor={paleta.hueso} />
+              <QRCode value={enlaceInvitado(nuevo.codigo)} size={200} color={paleta.verdeBosque} backgroundColor={paleta.hueso} />
             </View>
             <Text style={[tipografia.secundario, { color: t.textoSecundario, textAlign: 'center' }]}>
-              Vence: {fecha(nuevo.vigente_hasta)}{'\n'}El invitado escanea el QR con la cámara del iPhone o escribe el código en la app.
+              Vence: {fecha(nuevo.vigente_hasta)}{'\n'}El invitado escanea el QR con la cámara del iPhone, o abre app.rancholaslomas.com.mx y escribe el código.
             </Text>
             <Boton
               variante="secundario"

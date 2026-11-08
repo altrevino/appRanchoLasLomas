@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <title>Las Lomas</title>
+    <meta name="description" content="App interna del Rancho Las Lomas" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#F6F2EA" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/png" href="/iconos/favicon-48.png" />
+    <!-- iPhone: app instalable desde "Agregar a pantalla de inicio" -->
+    <link rel="apple-touch-icon" href="/iconos/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Las Lomas" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no" />
+    <style id="expo-reset">
+      html,
+      body {
+        height: 100%;
+        background-color: #f6f2ea;
+      }
+      body {
+        overflow: hidden;
+        overscroll-behavior: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>Activa JavaScript para usar la app del rancho.</noscript>
+    <div id="root"></div>
+    <script>
+      // Service worker: permite abrir la app y ver el mapa ya visto sin señal.
+      // No se registra en desarrollo (localhost) salvo con ?sw=1.
+      if ('serviceWorker' in navigator && (location.hostname !== 'localhost' || location.search.includes('sw=1'))) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+    </script>
+  </body>
+</html>
