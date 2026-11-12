@@ -62,7 +62,8 @@
     "test:db": "bash scripts/probar-db.sh",
     "crear-usuario": "tsx scripts/crear-usuario.mts",
     "build:web": "expo export --platform web && node scripts/despues-de-exportar.cjs",
-    "probar-servidor": "tsx scripts/probar-servidor.mts"
+    "probar-servidor": "tsx scripts/probar-servidor.mts",
+    "build": "npm run build:web"
   },
   "private": true
 }

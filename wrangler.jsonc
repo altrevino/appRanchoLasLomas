@@ -1,0 +1,11 @@
+// Publicación en Cloudflare Workers (Workers Builds compila y publica con cada push a main).
+{
+  "name": "apprancholaslomas",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // Cualquier ruta (/acceso, /mapa, ...) entrega index.html: la app resuelve la pantalla.
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [{ "pattern": "app.rancholaslomas.com.mx", "custom_domain": true }]
+}
