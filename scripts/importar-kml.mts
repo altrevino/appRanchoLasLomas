@@ -8,7 +8,9 @@
  *   npm run importar-kml -- --aplicar       # sin --aplicar solo muestra la vista previa
  *   npm run importar-kml -- archivo.kml --json   # imprime lo detectado, sin conectarse
  *   npm run cargar-prueba                   # carga el rancho ficticio (marcado como prueba)
- *   npm run importar-kml -- --excluir "Casa"   # no carga ese punto como espiadero (repetible)
+ *   npm run importar-kml -- --excluir "X"      # ignora ese punto (repetible)
+ *   npm run importar-kml -- --lugar "Bodega"   # carga ese punto como lugar, no espiadero (repetible)
+ *   (un punto llamado "Casa" siempre se carga como lugar)
  *
  * Requiere en .env: EXPO_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.
  */
@@ -23,7 +25,8 @@ const aplicar = args.includes('--aplicar');
 const soloJson = args.includes('--json');
 const esPrueba = args.includes('--prueba');
 const excluir = args.flatMap((a, i) => (a === '--excluir' && args[i + 1] ? [args[i + 1].trim().toLowerCase()] : []));
-let ruta = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--excluir');
+const lugaresExtra = args.flatMap((a, i) => (a === '--lugar' && args[i + 1] ? [args[i + 1]] : []));
+let ruta = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--excluir' && args[i - 1] !== '--lugar');
 
 if (!ruta) {
   const carpeta = 'kml';
@@ -40,7 +43,7 @@ if (!ruta) {
   ruta = candidatos[0];
 }
 
-const lectura = leerArchivoKml(new Uint8Array(readFileSync(ruta)));
+const lectura = leerArchivoKml(new Uint8Array(readFileSync(ruta)), lugaresExtra);
 if (excluir.length) {
   const antes = lectura.datos.espiaderos.length;
   lectura.datos.espiaderos = lectura.datos.espiaderos.filter((e) => !excluir.includes(e.nombre.trim().toLowerCase()));
@@ -53,7 +56,8 @@ if (soloJson) {
 }
 
 console.log(`\nArchivo: ${ruta}`);
-console.log(`Detectado: ${lectura.datos.linderos.length} lindero(s), ${lectura.datos.caminos.length} camino(s), ${lectura.datos.espiaderos.length} espiadero(s)`);
+console.log(`Detectado: ${lectura.datos.linderos.length} lindero(s), ${lectura.datos.caminos.length} camino(s), ${lectura.datos.espiaderos.length} espiadero(s), ${lectura.datos.lugares.length} lugar(es)`);
+for (const l of lectura.datos.lugares) console.log(`  · Lugar: ${l.nombre}`);
 for (const e of lectura.datos.espiaderos) {
   console.log(`  · ${e.nombre}  (${e.lat.toFixed(5)}, ${e.lon.toFixed(5)}${e.altitud != null ? `, ${e.altitud} m` : ''})`);
 }

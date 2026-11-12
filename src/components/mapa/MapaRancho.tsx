@@ -15,14 +15,15 @@ import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { paleta } from '../../theme';
 import { limites } from '../../lib/mapa/datos';
-import { capas, coleccion, estiloBase, radiosGeoJson } from '../../lib/mapa/estilo';
+import { avistamientosGeoJson, capas, capasMedida, coleccion, estiloBase, medidaGeoJson, radiosGeoJson } from '../../lib/mapa/estilo';
 import { MarcadorEspiadero } from './MarcadorEspiadero';
+import { MarcadorLugar } from './MarcadorLugar';
 import type { MapaRanchoProps, MapaRanchoRef } from './tipos';
 
 const RELLENO = { top: 90, bottom: 220, left: 40, right: 40 };
 
 export const MapaRancho = forwardRef<MapaRanchoRef, MapaRanchoProps>(function MapaRancho(
-  { datos, espiaderoSeleccionado, onTocarEspiadero, onTocarMapa },
+  { datos, ubicacion, espiaderoSeleccionado, objetivo, avistamientos, onTocarEspiadero, onTocarLugar, onTocarAvistamiento, onTocarMapa },
   ref,
 ) {
   const camara = useRef<CameraRef>(null);
@@ -32,11 +33,20 @@ export const MapaRancho = forwardRef<MapaRanchoRef, MapaRanchoProps>(function Ma
   const radios = useMemo(() => radiosGeoJson(datos.espiaderos), [datos.espiaderos]);
   const caminos = useMemo(() => coleccion(datos.caminos), [datos.caminos]);
   const linderos = useMemo(() => coleccion(datos.linderos), [datos.linderos]);
+  const puntosAvist = useMemo(() => avistamientosGeoJson(avistamientos), [avistamientos]);
+  const medida = useMemo(
+    () => medidaGeoJson(ubicacion ? [ubicacion.lon, ubicacion.lat] : null, objetivo),
+    [ubicacion, objetivo],
+  );
 
   useImperativeHandle(ref, () => ({
     verRancho: () => caja && camara.current?.fitBounds(caja, { padding: RELLENO, duration: 600 }),
     irA: (p) => camara.current?.flyTo({ center: p, zoom: 16, duration: 600 }),
   }));
+
+  const marcar = () => {
+    ultimoToqueMarcador.current = Date.now();
+  };
 
   return (
     <Map
@@ -66,8 +76,42 @@ export const MapaRancho = forwardRef<MapaRanchoRef, MapaRanchoProps>(function Ma
         <Layer {...capas.linderoSombra} />
         <Layer {...capas.lindero} />
       </GeoJSONSource>
+      <GeoJSONSource id="medida" data={medida}>
+        <Layer {...capasMedida.linea} />
+        <Layer {...capasMedida.objetivo} />
+      </GeoJSONSource>
+      <GeoJSONSource
+        id="avistamientos"
+        data={puntosAvist}
+        hitbox={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        onPress={(e) => {
+          const id = e.nativeEvent.features?.[0]?.properties?.id;
+          const a = avistamientos.find((x) => x.id === id);
+          if (a) {
+            marcar();
+            onTocarAvistamiento(a);
+          }
+        }}
+      >
+        <Layer {...capasMedida.avistamientos} />
+      </GeoJSONSource>
 
       <UserLocation accuracy heading />
+
+      {datos.lugares.map((l) => (
+        <Marker
+          key={l.id}
+          id={`lugar-${l.id}`}
+          lngLat={[l.lon, l.lat]}
+          anchor="bottom"
+          onPress={() => {
+            marcar();
+            onTocarLugar(l);
+          }}
+        >
+          <MarcadorLugar nombre={l.nombre} />
+        </Marker>
+      ))}
 
       {datos.espiaderos.map((e) => (
         <Marker
@@ -76,7 +120,7 @@ export const MapaRancho = forwardRef<MapaRanchoRef, MapaRanchoProps>(function Ma
           lngLat={[e.lon, e.lat]}
           anchor="bottom"
           onPress={() => {
-            ultimoToqueMarcador.current = Date.now();
+            marcar();
             onTocarEspiadero(e);
           }}
         >

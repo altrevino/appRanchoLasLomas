@@ -21,7 +21,7 @@ import { ayudaClases } from '../../config/textos';
 import { encolar, pendientes, usePendientes } from '../../lib/censo/cola';
 import { useCensoActual } from '../../lib/censo/datos';
 import { ahoraServidor } from '../../lib/censo/reloj';
-import { CLASES, NOMBRE_CLASE, conteoVacio, type Censo, type Clase, type EspiaderoCenso } from '../../lib/censo/tipos';
+import { NOMBRE_CLASE, conteoVacio, type Censo, type Clase, type EspiaderoCenso } from '../../lib/censo/tipos';
 import { distanciaM, espiaderoEnRadio } from '../../lib/geo';
 import { useSesion } from '../../lib/sesion';
 import { supabase } from '../../lib/supabase';
@@ -77,6 +77,13 @@ function useBrilloCampo() {
     };
   }, []);
 }
+
+// Machos en dos filas (M1–M3, M4–M5) y hembras/crías, las más frecuentes, abajo.
+const FILAS: Clase[][] = [
+  ['M1', 'M2', 'M3'],
+  ['M4', 'M5'],
+  ['hembra', 'cria'],
+];
 
 const formatear = (ms: number) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -332,9 +339,9 @@ export default function Captura() {
       </View>
 
       <View style={estilos.cuadricula}>
-        {[0, 2, 4].map((i) => (
-          <View key={i} style={estilos.fila}>
-            {CLASES.slice(i, i + 2).map((clave) => (
+        {FILAS.map((fila) => (
+          <View key={fila.join()} style={estilos.fila}>
+            {fila.map((clave) => (
               <Pressable
                 key={clave}
                 onPress={() => registrar(clave)}

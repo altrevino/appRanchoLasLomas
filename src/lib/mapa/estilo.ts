@@ -112,6 +112,53 @@ export const capas = {
   },
 };
 
+/** Línea de medición (tú → objetivo) y punto objetivo. */
+export function medidaGeoJson(desde: [number, number] | null, hasta: [number, number] | null): FeatureCollection {
+  const features: FeatureCollection['features'] = [];
+  if (hasta) features.push({ type: 'Feature', properties: { tipo: 'objetivo' }, geometry: { type: 'Point', coordinates: hasta } });
+  if (desde && hasta) features.push({ type: 'Feature', properties: { tipo: 'linea' }, geometry: { type: 'LineString', coordinates: [desde, hasta] } });
+  return { type: 'FeatureCollection', features };
+}
+
+export interface PuntoAvistamiento {
+  id: string;
+  macho_id: string;
+  folio: string;
+  apodo: string | null;
+  clase: string;
+  observado_at: string;
+  lon: number;
+  lat: number;
+}
+
+export function avistamientosGeoJson(lista: PuntoAvistamiento[]): FeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: lista.map((a) => ({ type: 'Feature', id: a.id, properties: { id: a.id }, geometry: { type: 'Point', coordinates: [a.lon, a.lat] } })),
+  };
+}
+
+export const capasMedida = {
+  linea: {
+    id: 'medida-linea',
+    type: 'line' as const,
+    filter: ['==', ['get', 'tipo'], 'linea'] as ['==', ['get', string], string],
+    layout: { 'line-cap': 'round' as const },
+    paint: { 'line-color': paleta.arena, 'line-width': 3, 'line-dasharray': [1.5, 1.5] },
+  },
+  objetivo: {
+    id: 'medida-objetivo',
+    type: 'circle' as const,
+    filter: ['==', ['get', 'tipo'], 'objetivo'] as ['==', ['get', string], string],
+    paint: { 'circle-radius': 9, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': paleta.arena, 'circle-stroke-width': 3 },
+  },
+  avistamientos: {
+    id: 'avistamientos',
+    type: 'circle' as const,
+    paint: { 'circle-radius': 6, 'circle-color': paleta.hueso, 'circle-stroke-color': paleta.verdeBosque, 'circle-stroke-width': 2, 'circle-opacity': 0.9 },
+  },
+};
+
 /** Tolerancia de toque en metros según el zoom (≈ 28 px de pantalla). */
 export function toleranciaToqueM(zoom: number, lat: number): number {
   const metrosPorPx = (156543.03 * Math.cos((lat * Math.PI) / 180)) / 2 ** zoom;

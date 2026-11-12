@@ -18,6 +18,15 @@ export interface Espiadero {
   origen: 'prueba' | 'kml' | 'manual';
 }
 
+export interface Lugar {
+  id: string;
+  nombre: string;
+  tipo: 'casa' | 'referencia';
+  lon: number;
+  lat: number;
+  altitud_m: number | null;
+}
+
 export interface CapaBase {
   id: string;
   nombre: string;
@@ -32,6 +41,7 @@ export interface DatosMapa {
   linderos: Feature<MultiPolygon>[];
   caminos: Feature<LineString>[];
   espiaderos: Espiadero[];
+  lugares: Lugar[];
   capaBase: CapaBase | null;
   actualizado: string;
 }
@@ -41,6 +51,7 @@ interface RespuestaMapa {
   caminos: Feature<LineString>[];
   espiaderos: Feature<Point, Omit<Espiadero, 'lon' | 'lat'>>[];
   capa_base: CapaBase | null;
+  lugares?: Lugar[];
 }
 
 const CLAVE = 'rll:mapa';
@@ -55,12 +66,13 @@ export function convertirRespuesta(r: RespuestaMapa): DatosMapa {
       lon: f.geometry.coordinates[0],
       lat: f.geometry.coordinates[1],
     })),
+    lugares: (r.lugares ?? []).map((l) => ({ ...l, altitud_m: l.altitud_m == null ? null : Number(l.altitud_m) })),
     capaBase: r.capa_base,
     actualizado: new Date().toISOString(),
   };
 }
 
-const consultarMapa = () => supabase.rpc('mapa_actual');
+const consultarMapa = () => supabase.rpc('mapa_actual_v2');
 
 export function useDatosMapa() {
   const [datos, setDatos] = useState<DatosMapa | null>(null);
@@ -85,7 +97,9 @@ export function useDatosMapa() {
   useEffect(() => {
     AsyncStorage.getItem(CLAVE)
       .then((g) => {
-        if (g) setDatos((actual) => actual ?? (JSON.parse(g) as DatosMapa));
+        if (!g) return;
+        const guardado = JSON.parse(g) as DatosMapa;
+        setDatos((actual) => actual ?? { ...guardado, lugares: guardado.lugares ?? [] });
       })
       .catch(() => {});
     consultarMapa().then(aplicar);

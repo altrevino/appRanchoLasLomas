@@ -7,6 +7,7 @@ export interface ResumenImportacion {
   };
   linderos: { nuevos: number; archivar: number };
   caminos: { nuevos: number; archivar: number };
+  lugares?: { nuevos: number; nombres: string[]; archivar: number };
   aplicado: boolean;
 }
 
@@ -22,5 +23,6 @@ export function formatearResumen(r: ResumenImportacion): string {
   e.archivar.forEach((x) => l.push(`    · ${x.nombre}${x.origen === 'prueba' ? ' (de prueba)' : ''}`));
   l.push(`  Lindero: ${r.linderos.nuevos} nuevo(s), ${r.linderos.archivar} anterior(es) se archivan`);
   l.push(`  Caminos: ${r.caminos.nuevos} nuevo(s), ${r.caminos.archivar} anterior(es) se archivan`);
+  if (r.lugares) l.push(`  Lugares (no son espiaderos): ${r.lugares.nombres.join(', ') || 'ninguno'}`);
   return l.join('\n');
 }

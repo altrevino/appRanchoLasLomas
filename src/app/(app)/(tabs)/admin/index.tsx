@@ -14,6 +14,7 @@ export default function Admin() {
         <Titulo>Administración</Titulo>
         <View style={estilos.lista}>
           <Fila titulo="Invitados y códigos" detalle="Generar código o QR, ver y revocar accesos" onPress={() => router.push('/admin/codigos')} />
+          <Fila titulo="Personal" detalle="Agregar personas, rol, contraseña, desactivar" onPress={() => router.push('/admin/personal')} />
           <Fila titulo="Espiaderos" detalle="Nombre y radio de detección" onPress={() => router.push('/admin/espiaderos')} />
           <Fila titulo="Importar KML" detalle="Lindero, caminos y espiaderos del rancho" onPress={() => router.push('/admin/importar')} />
         </View>

@@ -2,14 +2,14 @@
 
 App interna del Rancho Las Lomas: mapa del rancho con espiaderos, censo simultáneo de venado cola blanca, bitácora de machos y medidor de distancias.
 
-Es una **web app**: se abre en **https://app.rancholaslomas.com.mx** desde el iPhone, sin instalar nada. El personal puede agregarla a la pantalla de inicio para usarla como app. Hecha con Expo (React Native para web) y Supabase; el mismo código puede compilarse como app nativa de iPhone más adelante (sección 11).
+Es una **web app**: se abre en **https://app.rancholaslomas.com.mx** desde el iPhone, sin instalar nada. El personal puede agregarla a la pantalla de inicio para usarla como app. Hecha con Expo (React Native para web) y Supabase; el mismo código puede compilarse como app nativa de iPhone más adelante (sección 13).
 
 | Fase | Contenido | Estado |
 |---|---|---|
 | a | Proyecto base, tema, acceso con código de invitado, importador de KML, mapa con datos de prueba | Lista |
 | b | Censo simultáneo con avisos (push) y tiempo real | Lista |
 | c | Bitácora de machos | Lista |
-| d | Distancias | Pendiente |
+| d | Distancias | Lista |
 
 ---
 
@@ -169,7 +169,32 @@ En el **Mapa**, al tocar un espiadero, el personal ve los últimos avistamientos
 
 ---
 
-## 8. Cargar el KML real del rancho
+## 8. Distancias
+
+En el **Mapa**, toca un espiadero, la Casa, un avistamiento (personal: botón **Ver avistamientos**, últimos 30 días) o cualquier punto. Se dibuja una línea desde tu ubicación y se muestra:
+
+- **Distancia** en línea recta.
+- **Rumbo** en grados y punto cardinal (0° = norte, 90° = este).
+- **Diferencia de altura** del terreno («18 m más alto que tú»). Se calcula con un modelo de elevación del terreno (Copernicus, ~90 m de detalle) para los dos puntos, porque la altitud del GPS del teléfono tiene un error de 10–20 m. Sin señal, la distancia y el rumbo siguen funcionando; la altura no.
+
+Todo se actualiza al moverte. Cierra con **×**.
+
+---
+
+## 9. Personal del rancho (administrador)
+
+**Admin → Personal**:
+
+- **Agregar**: nombre, correo y rol (Personal o Administrador). La app muestra la contraseña temporal; **Copiar para enviar por mensaje** arma el texto con la dirección, el correo y la contraseña. Cada quien puede cambiarla tocando su nombre arriba a la derecha.
+- **Nueva contraseña** si alguien la olvida.
+- **Hacer administrador / Hacer personal**.
+- **Desactivar** (deja de poder entrar; sus registros se conservan) y **Reactivar**.
+
+No puedes cambiar tu propio rol ni desactivarte (para no quedarte sin acceso). Los invitados no van aquí: entran con código.
+
+---
+
+## 10. Cargar el KML real del rancho
 
 El KML debe tener: un **polígono** (lindero), **líneas** (caminos) y **puntos con nombre** (espiaderos). Sirve el que exporta Google Earth, en `.kml` o `.kmz`.
 
@@ -179,6 +204,7 @@ Qué hace la importación:
 - Los espiaderos nuevos se crean.
 - Los que ya no vienen en el KML (incluidos los 10 ficticios) se **archivan**: dejan de verse, pero no se borran.
 - Lindero y caminos se reemplazan; los anteriores quedan archivados.
+- Un punto llamado **Casa** se carga como **lugar** (se ve en el mapa con una casita y sirve para medir distancias), no como espiadero. Para cargar otro punto como lugar desde la computadora: `npm run importar-kml -- --lugar "Bodega" --aplicar`.
 - Siempre ves una **vista previa** antes de guardar, con conteos y advertencias (puntos sin nombre, espiaderos a menos de 400 m, puntos fuera del lindero).
 
 ### Opción A: desde la app (recomendada)
@@ -214,7 +240,7 @@ npm run importar-kml -- --aplicar
 
 ---
 
-## 9. Comandos útiles
+## 11. Comandos útiles
 
 | Comando | Para qué |
 |---|---|
@@ -232,7 +258,7 @@ npm run importar-kml -- --aplicar
 
 ---
 
-## 10. Estructura y decisiones técnicas
+## 12. Estructura y decisiones técnicas
 
 ```
 src/app/            Pantallas (Expo Router)
@@ -252,12 +278,13 @@ kml/                Aquí se arrastra el KML real; kml/ejemplo/ trae el ficticio
 - **Mapa sin señal**: los datos del mapa (lindero, caminos, espiaderos) y el perfil se guardan en el teléfono; la app abre con ellos y los actualiza en segundo plano.
 - **Ortomosaico propio**: cuando lo tengas, se registra en la tabla `capas_base` (XYZ o PMTiles) y la app lo usa en lugar del satelital, sin cambiar código.
 - **Censo**: `registrar_lote` recibe la cola del teléfono (ids generados en el teléfono, sin duplicados) y valida la ventana del servidor; `censo_actual` y `resumen_censo` alimentan la captura y el monitor; Supabase Realtime avisa de inicio/fin y de cada registro. Avisos por Web Push con la función `supabase/functions/avisar-censo` (llaves VAPID guardadas como secretos en Supabase).
+- **Clases**: M1 1.5 · M2 2.5 · M3 3.5 · M4 4.5 · M5 5.5+ años (`src/config/textos.ts`).
+- **Personal**: la función `supabase/functions/admin-usuarios` crea cuentas, cambia rol y contraseña y desactiva (necesita la llave secreta, por eso vive en el servidor). Solo responde a administradores.
 - **Bitácora**: el teléfono genera los ids (ejemplar, avistamiento, foto) para guardar sin señal; `registrar_avistamiento` crea el ejemplar si es nuevo, sin duplicar en reintentos, y redirige al destino si el ejemplar se fusionó mientras tanto. La búsqueda de parecidos corre en el teléfono (`src/lib/bitacora/similitud.ts`, con pruebas). Fotos en la carpeta privada `fotos` de Supabase Storage, visibles solo para el personal mediante enlaces firmados de una hora.
-- **Pantallas de muestra** del diseño (`/muestras/ficha`, `/muestras/captura`) solo existen en desarrollo.
 
 ---
 
-## 11. Opcional: app nativa de iPhone (TestFlight)
+## 13. Opcional: app nativa de iPhone (TestFlight)
 
 El mismo código compila como app nativa. Conviene si el personal necesita vibración en cada toque, brillo automático en el censo o avisos más confiables. Requiere cuenta de Apple Developer (99 USD al año) y una cuenta de Expo.
 

@@ -32,14 +32,6 @@ function Rutas() {
       <Stack.Protected guard={!!perfil}>
         <Stack.Screen name="(app)" />
       </Stack.Protected>
-      {/* Pantallas de muestra del diseño: solo en desarrollo */}
-      <Stack.Protected guard={__DEV__}>
-        <Stack.Screen name="muestras/ficha" />
-        <Stack.Screen
-          name="muestras/captura"
-          options={{ contentStyle: { backgroundColor: temas.campo.fondo }, gestureEnabled: false }}
-        />
-      </Stack.Protected>
     </Stack>
   );
 }

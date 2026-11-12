@@ -12,3 +12,4 @@ VISTA='{"linderos":[{"nombre":"Lindero real","coordenadas":[[[-100.12,26.60],[-1
 psql -tA -d $DB -v datos="$DATOS" -v vista_datos="$VISTA" -f supabase/tests/fase_a.test.sql 2>&1 | grep -v -e "^$" -e "_kml_esp" | sed "s/^psql:[^:]*:[0-9]*: //; s/^NOTICE:  //"
 psql -tA -d $DB -f supabase/tests/fase_b.test.sql 2>&1 | grep -v -e "^$" -e "_kml_esp" | sed "s/^psql:[^:]*:[0-9]*: //; s/^NOTICE:  //"
 psql -tA -d $DB -f supabase/tests/fase_c.test.sql 2>&1 | grep -v -e "^$" -e "_kml_esp" | sed "s/^psql:[^:]*:[0-9]*: //; s/^NOTICE:  //"
+psql -tA -d $DB -f supabase/tests/fase_d.test.sql 2>&1 | grep -v -e "^$" -e "_kml_esp" | sed "s/^psql:[^:]*:[0-9]*: //; s/^NOTICE:  //"

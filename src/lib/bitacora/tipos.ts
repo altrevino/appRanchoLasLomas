@@ -1,5 +1,5 @@
-export type ClaseMacho = 'M1' | 'M2' | 'M3' | 'M4';
-export const CLASES_MACHO: ClaseMacho[] = ['M1', 'M2', 'M3', 'M4'];
+export type ClaseMacho = 'M1' | 'M2' | 'M3' | 'M4' | 'M5';
+export const CLASES_MACHO: ClaseMacho[] = ['M1', 'M2', 'M3', 'M4', 'M5'];
 export type Forma = 'abierta' | 'cerrada';
 export type CuernoRoto = 'no' | 'izquierdo' | 'derecho' | 'ambos';
 export type EstadoMacho = 'por_validar' | 'activo' | 'cazado' | 'fusionado';

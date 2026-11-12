@@ -87,6 +87,7 @@ export default function Importar() {
               <Conteo numero={d.linderos.length} texto="lindero" />
               <Conteo numero={d.caminos.length} texto="caminos" />
               <Conteo numero={d.espiaderos.length} texto="espiaderos" />
+              {d.lugares.length ? <Conteo numero={d.lugares.length} texto="lugares" /> : null}
             </View>
             {d.espiaderos.map((e) => (
               <Text key={e.nombre} style={[tipografia.secundario, { color: t.texto }]}>
@@ -97,6 +98,11 @@ export default function Importar() {
           </View>
         ) : null}
 
+        {d?.lugares.length ? (
+          <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>
+            {`Lugares (se ven en el mapa, no son espiaderos): ${d.lugares.map((l) => l.nombre).join(', ')}`}
+          </Text>
+        ) : null}
         {lectura?.advertencias.map((a, i) => (
           <Aviso key={i} tono={a.gravedad === 'error' ? 'error' : 'alerta'}>
             {a.mensaje}

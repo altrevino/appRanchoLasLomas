@@ -1,6 +1,6 @@
-export type Clase = 'M1' | 'M2' | 'M3' | 'M4' | 'hembra' | 'cria';
-export const CLASES: Clase[] = ['M1', 'M2', 'M3', 'M4', 'hembra', 'cria'];
-export const NOMBRE_CLASE: Record<Clase, string> = { M1: 'M1', M2: 'M2', M3: 'M3', M4: 'M4', hembra: 'Hembra', cria: 'Cría' };
+export type Clase = 'M1' | 'M2' | 'M3' | 'M4' | 'M5' | 'hembra' | 'cria';
+export const CLASES: Clase[] = ['M1', 'M2', 'M3', 'M4', 'M5', 'hembra', 'cria'];
+export const NOMBRE_CLASE: Record<Clase, string> = { M1: 'M1', M2: 'M2', M3: 'M3', M4: 'M4', M5: 'M5', hembra: 'Hembra', cria: 'Cría' };
 
 export type EstadoCenso = 'borrador' | 'en_curso' | 'cerrado' | 'cancelado';
 
@@ -32,7 +32,7 @@ export interface CensoActual {
 }
 
 export type Conteo = Record<Clase, number>;
-export const conteoVacio = (): Conteo => ({ M1: 0, M2: 0, M3: 0, M4: 0, hembra: 0, cria: 0 });
+export const conteoVacio = (): Conteo => ({ M1: 0, M2: 0, M3: 0, M4: 0, M5: 0, hembra: 0, cria: 0 });
 
 export interface ResumenEspiadero {
   espiadero_id: string;

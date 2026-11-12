@@ -53,8 +53,9 @@ const CLASES = [
   ['cria', 20],
   ['M1', 12],
   ['M2', 12],
-  ['M3', 10],
-  ['M4', 6],
+  ['M3', 9],
+  ['M4', 5],
+  ['M5', 2],
 ] as const;
 const clasePorPeso = () => {
   let r = Math.random() * 100;

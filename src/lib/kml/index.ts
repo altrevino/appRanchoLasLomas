@@ -33,12 +33,24 @@ export interface EspiaderoKml {
   lat: number;
   altitud: number | null;
 }
+export interface LugarKml {
+  nombre: string;
+  tipo: 'casa' | 'referencia';
+  lon: number;
+  lat: number;
+  altitud: number | null;
+}
 /** Formato que recibe la función `importar_kml` de la base de datos. */
 export interface DatosKml {
   linderos: LinderoKml[];
   caminos: CaminoKml[];
   espiaderos: EspiaderoKml[];
+  /** Puntos que no son espiaderos (p. ej. la Casa): se ven en el mapa, no van a censos. */
+  lugares: LugarKml[];
 }
+
+/** Nombres de puntos que se cargan como lugar y no como espiadero. */
+export const NOMBRES_LUGAR: Record<string, LugarKml['tipo']> = { casa: 'casa', 'casa principal': 'casa' };
 export interface Advertencia {
   /** `error` impide importar; `aviso` solo informa. */
   gravedad: 'error' | 'aviso';
@@ -62,7 +74,7 @@ const normalizar = (t: string) =>
 const dosD = (c: number[]): LonLat => [Number(c[0].toFixed(7)), Number(c[1].toFixed(7))];
 
 /** Acepta el contenido de un .kml (texto) o de un .kmz (bytes zip). */
-export function leerArchivoKml(contenido: string | Uint8Array): LecturaKml {
+export function leerArchivoKml(contenido: string | Uint8Array, lugaresExtra: string[] = []): LecturaKml {
   let texto: string;
   if (typeof contenido === 'string') {
     texto = contenido;
@@ -75,17 +87,18 @@ export function leerArchivoKml(contenido: string | Uint8Array): LecturaKml {
   } else {
     texto = strFromU8(contenido);
   }
-  return leerKml(texto);
+  return leerKml(texto, lugaresExtra);
 }
 
-export function leerKml(texto: string): LecturaKml {
+export function leerKml(texto: string, lugaresExtra: string[] = []): LecturaKml {
   const doc = new DOMParser({ onError: () => {} }).parseFromString(texto, 'text/xml');
   if (!doc || !doc.getElementsByTagName('kml').length) {
     throw new Error('El archivo no parece ser un KML válido');
   }
   const geo = kmlAGeoJson(doc as unknown as Document);
 
-  const datos: DatosKml = { linderos: [], caminos: [], espiaderos: [] };
+  const datos: DatosKml = { linderos: [], caminos: [], espiaderos: [], lugares: [] };
+  const extra = new Set(lugaresExtra.map(normalizar));
   const advertencias: Advertencia[] = [];
   let ignorados = 0;
   let sinNombre = 0;
@@ -120,6 +133,17 @@ export function leerKml(texto: string): LecturaKml {
           nombre = `Espiadero sin nombre ${sinNombre}`;
         }
         const alt = g.coordinates[2];
+        const clave = normalizar(nombre);
+        if (NOMBRES_LUGAR[clave] || extra.has(clave)) {
+          datos.lugares.push({
+            nombre,
+            tipo: NOMBRES_LUGAR[clave] ?? 'referencia',
+            lon: Number(g.coordinates[0].toFixed(7)),
+            lat: Number(g.coordinates[1].toFixed(7)),
+            altitud: typeof alt === 'number' && alt !== 0 ? Math.round(alt * 10) / 10 : null,
+          });
+          break;
+        }
         datos.espiaderos.push({
           nombre,
           lon: Number(g.coordinates[0].toFixed(7)),

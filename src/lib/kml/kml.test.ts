@@ -54,3 +54,9 @@ test('sin lindero es error', () => {
 test('rechaza archivos que no son KML', () => {
   assert.throws(() => leerKml('<html></html>'), /no parece ser un KML/);
 });
+
+test('un punto llamado Casa se carga como lugar, no como espiadero', () => {
+  const r = leerKml(envolver(lindero + punto('Casa', -100.1, 26.62) + punto('Tapón Casa', -100.09, 26.62) + punto('Bodega', -100.07, 26.63)), ['Bodega']);
+  assert.deepEqual(r.datos.lugares.map((l) => [l.nombre, l.tipo]), [['Casa', 'casa'], ['Bodega', 'referencia']]);
+  assert.deepEqual(r.datos.espiaderos.map((e) => e.nombre), ['Tapón Casa']);
+});
