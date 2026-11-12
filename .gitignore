@@ -40,3 +40,7 @@ yarn-error.*
 /ios
 /android
 .env
+
+# KML real del rancho: ubicaciones privadas, no se suben al repositorio
+kml/*.kml
+kml/*.kmz

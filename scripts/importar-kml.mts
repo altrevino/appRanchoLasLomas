@@ -8,6 +8,7 @@
  *   npm run importar-kml -- --aplicar       # sin --aplicar solo muestra la vista previa
  *   npm run importar-kml -- archivo.kml --json   # imprime lo detectado, sin conectarse
  *   npm run cargar-prueba                   # carga el rancho ficticio (marcado como prueba)
+ *   npm run importar-kml -- --excluir "Casa"   # no carga ese punto como espiadero (repetible)
  *
  * Requiere en .env: EXPO_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.
  */
@@ -21,7 +22,8 @@ const args = process.argv.slice(2);
 const aplicar = args.includes('--aplicar');
 const soloJson = args.includes('--json');
 const esPrueba = args.includes('--prueba');
-let ruta = args.find((a) => !a.startsWith('--'));
+const excluir = args.flatMap((a, i) => (a === '--excluir' && args[i + 1] ? [args[i + 1].trim().toLowerCase()] : []));
+let ruta = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--excluir');
 
 if (!ruta) {
   const carpeta = 'kml';
@@ -39,6 +41,11 @@ if (!ruta) {
 }
 
 const lectura = leerArchivoKml(new Uint8Array(readFileSync(ruta)));
+if (excluir.length) {
+  const antes = lectura.datos.espiaderos.length;
+  lectura.datos.espiaderos = lectura.datos.espiaderos.filter((e) => !excluir.includes(e.nombre.trim().toLowerCase()));
+  console.log(`Excluidos como espiadero: ${antes - lectura.datos.espiaderos.length} (${excluir.join(', ')})`);
+}
 
 if (soloJson) {
   process.stdout.write(JSON.stringify(lectura.datos));
