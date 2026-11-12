@@ -16,9 +16,9 @@ export function Encabezado({ atras = true, derecha }: { atras?: boolean; derecha
   return (
     <View style={[estilos.encabezado, { paddingTop: insets.top + espacio.s }]}>
       <View style={estilos.encabezadoLado}>
-        {atras && router.canGoBack() ? (
+        {atras ? (
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel="Regresar"

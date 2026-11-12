@@ -1,11 +1,10 @@
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Aviso, Boton, Campo, Encabezado, Etiqueta, Titulo } from '../../../components/consulta';
-import { esAppInstalada } from '../../../lib/enlaces';
-import { useSesion } from '../../../lib/sesion';
-import { mensajeDeError, supabase } from '../../../lib/supabase';
-import { espacio, temas, tipografia } from '../../../theme';
+import { Aviso, Boton, Campo, Encabezado, Etiqueta, Titulo } from '../../components/consulta';
+import { esAppInstalada } from '../../lib/enlaces';
+import { useSesion } from '../../lib/sesion';
+import { mensajeDeError, supabase } from '../../lib/supabase';
+import { espacio, temas, tipografia } from '../../theme';
 
 const t = temas.consulta;
 const nombreRol = { admin: 'Administrador', staff: 'Personal', invitado: 'Invitado' } as const;
@@ -75,7 +74,6 @@ export default function Cuenta() {
           variante="peligro"
           onPress={async () => {
             await salir();
-            router.replace('/acceso');
           }}
         >
           Cerrar sesión

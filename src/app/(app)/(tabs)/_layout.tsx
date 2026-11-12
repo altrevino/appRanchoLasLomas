@@ -49,7 +49,6 @@ export default function LayoutApp() {
         name="admin"
         options={{ title: 'Admin', tabBarIcon: icono(IconoAdmin), href: esAdmin(perfil) ? undefined : null }}
       />
-      <Tabs.Screen name="cuenta" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -38,6 +38,7 @@ export default function LayoutApp() {
       <VigilanteCenso />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: temas.consulta.fondo } }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="cuenta" />
         <Stack.Screen name="captura" options={{ contentStyle: { backgroundColor: temas.campo.fondo }, gestureEnabled: false, animation: 'fade' }} />
       </Stack>
     </>
