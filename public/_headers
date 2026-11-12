@@ -1,4 +1,4 @@
-# Cabeceras para Cloudflare Pages
+# Cabeceras (Cloudflare Workers con archivos estáticos)
 /sw.js
   Cache-Control: no-cache
 /index.html

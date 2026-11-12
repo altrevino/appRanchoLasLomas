@@ -92,35 +92,12 @@ Se abre en el navegador con los datos de tu Supabase. Para verla como en el tel�
 
 ## 5. Publicar en app.rancholaslomas.com.mx
 
-La app se publica gratis en **Cloudflare Pages**, conectada a GitHub: cada cambio que se sube al repositorio se publica solo en uno o dos minutos.
+La app vive en **Cloudflare Workers** (proyecto `apprancholaslomas`, cuenta de Cloudflare del rancho), conectado al repositorio de GitHub. **Cada cambio que se sube a la rama `main` se compila y publica solo** en uno o dos minutos. No hay que hacer nada más.
 
-### 5.1 Crear el sitio (una vez)
-
-1. Crea una cuenta gratuita en dash.cloudflare.com.
-2. Ve a **Workers & Pages → Create → Pages → Connect to Git**, autoriza GitHub y elige el repositorio `altrevino/appRanchoLasLomas`.
-3. Configuración de compilación:
-   - **Framework preset:** None
-   - **Build command:** `npm run build:web`
-   - **Build output directory:** `dist`
-4. En **Environment variables** agrega (con tus valores):
-
-| Nombre | Valor |
-|---|---|
-| `NODE_VERSION` | `22` |
-| `EXPO_PUBLIC_SUPABASE_URL` | `https://TU-PROYECTO.supabase.co` |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | tu llave anon / publishable |
-| `EXPO_PUBLIC_MAPTILER_KEY` | tu llave de MapTiler |
-| `EXPO_PUBLIC_APP_URL` | `https://app.rancholaslomas.com.mx` |
-
-   La llave `service_role` **nunca** va aquí.
-5. **Save and Deploy**. Al terminar te da una dirección tipo `rancho-las-lomas.pages.dev`; ábrela en el iPhone para confirmar que funciona.
-
-### 5.2 Conectar el dominio
-
-1. En el proyecto de Cloudflare Pages: **Custom domains → Set up a custom domain** → escribe `app.rancholaslomas.com.mx`.
-2. Cloudflare te mostrará un registro **CNAME**: nombre `app`, destino `rancho-las-lomas.pages.dev` (o el que te indique).
-3. Entra donde administras el dominio `rancholaslomas.com.mx` (el registrador, como Akky o GoDaddy, o el panel de tu hosting, en "Zona DNS" o "DNS") y agrega ese CNAME. **No toques los registros del sitio principal ni del correo.**
-4. En minutos (a veces unas horas) Cloudflare marca el dominio como activo y genera el certificado HTTPS solo.
+- La configuración está en el código: `wrangler.jsonc` (archivos, rutas y dominio) y `.env.production` (dirección de Supabase y llave pública; no contiene secretos).
+- El dominio `app.rancholaslomas.com.mx` lo crea Cloudflare automáticamente al publicar (registro DNS `app`). Los demás registros del dominio (sitio, correo, Home Assistant) no se tocan.
+- Para ver publicaciones o errores de compilación: dash.cloudflare.com → **Workers & Pages → apprancholaslomas → Deployments**.
+- Para agregar la llave de MapTiler: ponla en `.env.production` como `EXPO_PUBLIC_MAPTILER_KEY=...` y sube el cambio.
 
 ### 5.3 Compartirla
 
@@ -192,7 +169,7 @@ npm run importar-kml -- --aplicar
 | `npm test` | Pruebas del lector de KML y cálculos de distancia |
 | `npm run test:db` | Pruebas de la base de datos (requiere Postgres con PostGIS local) |
 | `npm run contraste` | Verificar contraste de colores (WCAG AA) |
-| `npm run build:web` | Compilar la web app (lo hace Cloudflare solo) |
+| `npm run build` | Compilar la web app (lo hace Cloudflare solo con cada push) |
 | `npm run logo` / `npm run iconos` | Regenerar trazos del logotipo / ícono y splash |
 
 ---
