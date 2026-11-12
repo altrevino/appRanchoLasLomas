@@ -2,13 +2,13 @@
 
 App interna del Rancho Las Lomas: mapa del rancho con espiaderos, censo simultáneo de venado cola blanca, bitácora de machos y medidor de distancias.
 
-Es una **web app**: se abre en **https://app.rancholaslomas.com.mx** desde el iPhone, sin instalar nada. El personal puede agregarla a la pantalla de inicio para usarla como app. Hecha con Expo (React Native para web) y Supabase; el mismo código puede compilarse como app nativa de iPhone más adelante (sección 10).
+Es una **web app**: se abre en **https://app.rancholaslomas.com.mx** desde el iPhone, sin instalar nada. El personal puede agregarla a la pantalla de inicio para usarla como app. Hecha con Expo (React Native para web) y Supabase; el mismo código puede compilarse como app nativa de iPhone más adelante (sección 11).
 
 | Fase | Contenido | Estado |
 |---|---|---|
 | a | Proyecto base, tema, acceso con código de invitado, importador de KML, mapa con datos de prueba | Lista |
 | b | Censo simultáneo con avisos (push) y tiempo real | Lista |
-| c | Bitácora de machos | Pendiente |
+| c | Bitácora de machos | Lista |
 | d | Distancias | Pendiente |
 
 ---
@@ -146,7 +146,30 @@ Crea 8 usuarios temporales, inicia un censo marcado como «simulación» y los p
 
 ---
 
-## 7. Cargar el KML real del rancho
+## 7. Bitácora de machos (administrador y personal)
+
+Los invitados no ven la bitácora ni los avistamientos en el mapa.
+
+### Registrar un avistamiento
+
+1. **Bitácora → Registrar avistamiento** (o, desde la ficha de un ejemplar, **Registrar avistamiento** para ese ejemplar).
+2. **Foto**: tomarla o elegirla de la galería (opcional). Se comprime en el teléfono antes de subirla.
+3. **Lugar**: el espiadero se detecta por GPS; **Cambiar** para elegir otro o «Fuera de espiadero».
+4. **Clase** (M1–M4) y **rasgos**: puntas por lado, forma de la cornamenta, cuerno roto, puntas anómalas, oreja marcada, cicatrices y una nota. Todo es opcional salvo la clase; «No sé» deja el dato vacío.
+5. **Buscar parecidos**: la app muestra los ejemplares más parecidos (misma clase o vecina, rasgos que coinciden, mismo espiadero o cercano, visto recientemente) con su foto y el porcentaje de parecido.
+   - **Es este** → se suma al ejemplar.
+   - **Es un ejemplar nuevo** → se crea con folio automático (LL-001, LL-002…) y queda **por validar**.
+6. Sin señal se guarda en el teléfono (con su foto) y se envía solo al volver la señal.
+
+### Fichas
+
+Foto principal, folio, clase y apodo; galería; rasgos; espiaderos donde se ha visto; historial de avistamientos y cambios de clase. El personal puede **Editar** (apodo, clase, rasgos, nota) y elegir la foto principal. El administrador además puede **Validar ejemplar**, **Unir con otro ejemplar** (duplicados: avistamientos y fotos pasan al que se conserva) y **Marcar como cazado**. Los ejemplares activos sin avistamientos en 60 días aparecen como «Sin ver 60 días».
+
+En el **Mapa**, al tocar un espiadero, el personal ve los últimos avistamientos de ese lugar.
+
+---
+
+## 8. Cargar el KML real del rancho
 
 El KML debe tener: un **polígono** (lindero), **líneas** (caminos) y **puntos con nombre** (espiaderos). Sirve el que exporta Google Earth, en `.kml` o `.kmz`.
 
@@ -191,7 +214,7 @@ npm run importar-kml -- --aplicar
 
 ---
 
-## 8. Comandos útiles
+## 9. Comandos útiles
 
 | Comando | Para qué |
 |---|---|
@@ -209,7 +232,7 @@ npm run importar-kml -- --aplicar
 
 ---
 
-## 9. Estructura y decisiones técnicas
+## 10. Estructura y decisiones técnicas
 
 ```
 src/app/            Pantallas (Expo Router)
@@ -229,11 +252,12 @@ kml/                Aquí se arrastra el KML real; kml/ejemplo/ trae el ficticio
 - **Mapa sin señal**: los datos del mapa (lindero, caminos, espiaderos) y el perfil se guardan en el teléfono; la app abre con ellos y los actualiza en segundo plano.
 - **Ortomosaico propio**: cuando lo tengas, se registra en la tabla `capas_base` (XYZ o PMTiles) y la app lo usa en lugar del satelital, sin cambiar código.
 - **Censo**: `registrar_lote` recibe la cola del teléfono (ids generados en el teléfono, sin duplicados) y valida la ventana del servidor; `censo_actual` y `resumen_censo` alimentan la captura y el monitor; Supabase Realtime avisa de inicio/fin y de cada registro. Avisos por Web Push con la función `supabase/functions/avisar-censo` (llaves VAPID guardadas como secretos en Supabase).
+- **Bitácora**: el teléfono genera los ids (ejemplar, avistamiento, foto) para guardar sin señal; `registrar_avistamiento` crea el ejemplar si es nuevo, sin duplicar en reintentos, y redirige al destino si el ejemplar se fusionó mientras tanto. La búsqueda de parecidos corre en el teléfono (`src/lib/bitacora/similitud.ts`, con pruebas). Fotos en la carpeta privada `fotos` de Supabase Storage, visibles solo para el personal mediante enlaces firmados de una hora.
 - **Pantallas de muestra** del diseño (`/muestras/ficha`, `/muestras/captura`) solo existen en desarrollo.
 
 ---
 
-## 10. Opcional: app nativa de iPhone (TestFlight)
+## 11. Opcional: app nativa de iPhone (TestFlight)
 
 El mismo código compila como app nativa. Conviene si el personal necesita vibración en cada toque, brillo automático en el censo o avisos más confiables. Requiere cuenta de Apple Developer (99 USD al año) y una cuenta de Expo.
 

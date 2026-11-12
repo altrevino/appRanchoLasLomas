@@ -1,9 +1,9 @@
 /**
  * Módulo 1: mapa del rancho con espiaderos y ubicación en vivo.
  */
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { BotonCuenta } from '../../../components/BotonCuenta';
 import { Aviso, Encabezado, Etiqueta } from '../../../components/consulta';
@@ -13,6 +13,8 @@ import { distanciaM, puntoCardinal, rumboGrados } from '../../../lib/geo';
 import { useDatosMapa, type Espiadero } from '../../../lib/mapa/datos';
 import { esStaff, useSesion } from '../../../lib/sesion';
 import { useUbicacion } from '../../../lib/ubicacion';
+import { supabase } from '../../../lib/supabase';
+import { haceDias } from '../../../components/bitacora/TarjetaMacho';
 import { borde, espacio, radio, temas, tipografia } from '../../../theme';
 
 const t = temas.consulta;
@@ -27,6 +29,21 @@ export default function Mapa() {
   const { ubicacion, permiso } = useUbicacion();
   const [seleccion, setSeleccion] = useState<Espiadero | null>(null);
   const mapa = useRef<MapaRanchoRef>(null);
+  const [avistamientos, setAvistamientos] = useState<{ macho_id: string; folio: string; apodo: string | null; clase: string; observado_at: string }[] | null>(null);
+  const staff = esStaff(perfil);
+
+  // Últimos avistamientos del espiadero tocado (solo personal)
+  useEffect(() => {
+    if (!seleccion || !staff) return;
+    let vivo = true;
+    supabase.rpc('ultimos_avistamientos', { p_espiadero: seleccion.id, p_limite: 5 }).then(({ data }) => {
+      if (vivo) setAvistamientos(data ?? []);
+    });
+    return () => {
+      vivo = false;
+      setAvistamientos(null);
+    };
+  }, [seleccion, staff]);
 
   // Al volver a la pestaña (por ejemplo, después de importar un KML) se recarga.
   useFocusEffect(
@@ -100,10 +117,26 @@ export default function Mapa() {
                 {puntoCardinal(rumboGrados([ubicacion.lon, ubicacion.lat], [seleccion.lon, seleccion.lat]))}
               </Text>
             ) : null}
-            {esStaff(perfil) ? (
+            {staff ? (
               <View style={{ gap: espacio.xs, marginTop: espacio.s }}>
                 <Etiqueta>Últimos avistamientos</Etiqueta>
-                <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>Sin avistamientos registrados.</Text>
+                {avistamientos === null ? (
+                  <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>Cargando…</Text>
+                ) : avistamientos.length === 0 ? (
+                  <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>Sin avistamientos registrados.</Text>
+                ) : (
+                  avistamientos.map((a) => (
+                    <Text
+                      key={a.macho_id + a.observado_at}
+                      onPress={() => router.push({ pathname: '/bitacora/[id]', params: { id: a.macho_id } })}
+                      style={[tipografia.secundario, { color: t.texto }]}
+                      accessibilityRole="link"
+                    >
+                      <Text style={{ fontWeight: '700', color: t.primario }}>{a.folio}</Text>
+                      {a.apodo ? ` “${a.apodo}”` : ''} · {a.clase} · {haceDias(a.observado_at)}
+                    </Text>
+                  ))
+                )}
               </View>
             ) : null}
           </View>

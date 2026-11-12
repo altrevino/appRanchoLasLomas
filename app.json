@@ -55,7 +55,15 @@
         }
       ],
       "@maplibre/maplibre-react-native",
-      "expo-dev-client"
+      "expo-dev-client",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "La app usa tus fotos para registrar ejemplares en la bitácora del rancho.",
+          "cameraPermission": "La app usa la cámara para fotografiar ejemplares en la bitácora del rancho.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "scheme": "rancholaslomas",
     "experiments": {
