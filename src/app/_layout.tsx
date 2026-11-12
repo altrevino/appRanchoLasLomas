@@ -1,4 +1,4 @@
-import { Cinzel_600SemiBold, Cinzel_700Bold, useFonts } from '@expo-google-fonts/cinzel';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -10,7 +10,11 @@ SplashScreen.preventAutoHideAsync();
 
 function Rutas() {
   const { cargando, perfil } = useSesion();
-  const [fuentesListas, error] = useFonts({ Cinzel_600SemiBold, Cinzel_700Bold });
+  // Fuentes copiadas a assets/fuentes (la ruta original lleva "@", que el hosting no sirve bien).
+  const [fuentesListas, error] = useFonts({
+    Cinzel_600SemiBold: require('../../assets/fuentes/Cinzel_600SemiBold.ttf'),
+    Cinzel_700Bold: require('../../assets/fuentes/Cinzel_700Bold.ttf'),
+  });
   const listo = !cargando && (fuentesListas || !!error);
 
   useEffect(() => {
