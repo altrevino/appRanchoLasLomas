@@ -121,7 +121,7 @@ export default function Mapa() {
           {error && datos ? <Aviso tono="alerta">{error}</Aviso> : null}
           {permiso === 'negado' ? <Aviso tono="alerta">Sin permiso de ubicación. Actívalo en Ajustes → Las Lomas → Ubicación.</Aviso> : null}
           {staff && datos && !sinDatos ? (
-            <View style={{ flexDirection: 'row' }}>
+            <View style={estilos.chipMapa}>
               <Opcion activa={verAvist} onPress={() => setVerAvist(!verAvist)}>
                 {verAvist ? `Avistamientos 30 días (${puntosAvist.length})` : 'Ver avistamientos'}
               </Opcion>
@@ -259,5 +259,6 @@ const estilos = StyleSheet.create({
     gap: espacio.s,
   },
   hojaFila: { flexDirection: 'row', alignItems: 'flex-start', gap: espacio.m },
+  chipMapa: { alignSelf: 'flex-start', backgroundColor: t.fondo, borderRadius: radio.m },
   medida: { flexDirection: 'row', alignItems: 'center', gap: espacio.l },
 });
