@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { BotonCuenta } from '../../../components/BotonCuenta';
-import { Encabezado, Fila, Titulo } from '../../../components/consulta';
-import { borde, espacio, radio, temas } from '../../../theme';
+import { BotonCuenta } from '../../../../components/BotonCuenta';
+import { Encabezado, Fila, Titulo } from '../../../../components/consulta';
+import { borde, espacio, radio, temas } from '../../../../theme';
 
 const t = temas.consulta;
 

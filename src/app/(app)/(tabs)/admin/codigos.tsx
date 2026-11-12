@@ -5,10 +5,10 @@ import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import { Aviso, Boton, Campo, Encabezado, Etiqueta, Fila, Opcion, Titulo } from '../../../components/consulta';
-import { enlaceInvitado } from '../../../lib/enlaces';
-import { mensajeDeError, supabase } from '../../../lib/supabase';
-import { borde, espacio, paleta, radio, temas, tipografia } from '../../../theme';
+import { Aviso, Boton, Campo, Encabezado, Etiqueta, Fila, Opcion, Titulo } from '../../../../components/consulta';
+import { enlaceInvitado } from '../../../../lib/enlaces';
+import { mensajeDeError, supabase } from '../../../../lib/supabase';
+import { borde, espacio, paleta, radio, temas, tipografia } from '../../../../theme';
 
 const t = temas.consulta;
 

@@ -5,15 +5,15 @@ import { useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { BotonCuenta } from '../../components/BotonCuenta';
-import { Aviso, Encabezado, Etiqueta } from '../../components/consulta';
-import { MapaRancho } from '../../components/mapa/MapaRancho';
-import type { MapaRanchoRef } from '../../components/mapa/tipos';
-import { distanciaM, puntoCardinal, rumboGrados } from '../../lib/geo';
-import { useDatosMapa, type Espiadero } from '../../lib/mapa/datos';
-import { esStaff, useSesion } from '../../lib/sesion';
-import { useUbicacion } from '../../lib/ubicacion';
-import { borde, espacio, radio, temas, tipografia } from '../../theme';
+import { BotonCuenta } from '../../../components/BotonCuenta';
+import { Aviso, Encabezado, Etiqueta } from '../../../components/consulta';
+import { MapaRancho } from '../../../components/mapa/MapaRancho';
+import type { MapaRanchoRef } from '../../../components/mapa/tipos';
+import { distanciaM, puntoCardinal, rumboGrados } from '../../../lib/geo';
+import { useDatosMapa, type Espiadero } from '../../../lib/mapa/datos';
+import { esStaff, useSesion } from '../../../lib/sesion';
+import { useUbicacion } from '../../../lib/ubicacion';
+import { borde, espacio, radio, temas, tipografia } from '../../../theme';
 
 const t = temas.consulta;
 

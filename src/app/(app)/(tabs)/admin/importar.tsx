@@ -6,11 +6,11 @@ import { File } from 'expo-file-system';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Aviso, Boton, Encabezado, Etiqueta, Titulo } from '../../../components/consulta';
-import { hayErrores, leerArchivoKml, type LecturaKml } from '../../../lib/kml';
-import type { ResumenImportacion } from '../../../lib/kml/resumen';
-import { mensajeDeError, supabase } from '../../../lib/supabase';
-import { borde, espacio, radio, temas, tipografia } from '../../../theme';
+import { Aviso, Boton, Encabezado, Etiqueta, Titulo } from '../../../../components/consulta';
+import { hayErrores, leerArchivoKml, type LecturaKml } from '../../../../lib/kml';
+import type { ResumenImportacion } from '../../../../lib/kml/resumen';
+import { mensajeDeError, supabase } from '../../../../lib/supabase';
+import { borde, espacio, radio, temas, tipografia } from '../../../../theme';
 
 const t = temas.consulta;
 

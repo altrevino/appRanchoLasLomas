@@ -2,12 +2,12 @@
 
 App interna del Rancho Las Lomas: mapa del rancho con espiaderos, censo simultáneo de venado cola blanca, bitácora de machos y medidor de distancias.
 
-Es una **web app**: se abre en **https://app.rancholaslomas.com.mx** desde el iPhone, sin instalar nada. El personal puede agregarla a la pantalla de inicio para usarla como app. Hecha con Expo (React Native para web) y Supabase; el mismo código puede compilarse como app nativa de iPhone más adelante (sección 9).
+Es una **web app**: se abre en **https://app.rancholaslomas.com.mx** desde el iPhone, sin instalar nada. El personal puede agregarla a la pantalla de inicio para usarla como app. Hecha con Expo (React Native para web) y Supabase; el mismo código puede compilarse como app nativa de iPhone más adelante (sección 10).
 
 | Fase | Contenido | Estado |
 |---|---|---|
 | a | Proyecto base, tema, acceso con código de invitado, importador de KML, mapa con datos de prueba | Lista |
-| b | Censo simultáneo con avisos (push) y tiempo real | Pendiente |
+| b | Censo simultáneo con avisos (push) y tiempo real | Lista |
 | c | Bitácora de machos | Pendiente |
 | d | Distancias | Pendiente |
 
@@ -112,7 +112,41 @@ La app vive en **Cloudflare Workers** (proyecto `apprancholaslomas`, cuenta de C
 
 ---
 
-## 6. Cargar el KML real del rancho
+## 6. Censo simultáneo
+
+### Antes del primer censo (cada persona, una vez)
+
+1. Abrir `app.rancholaslomas.com.mx` en **Safari** y agregarla a la pantalla de inicio (**Compartir → Agregar a pantalla de inicio**).
+2. Abrirla desde el ícono, ir a **Censo** y tocar **Activar avisos**. Así le llega el aviso cuando inicies un censo.
+
+Los invitados no necesitan avisos: basta con que tengan la app abierta (en cualquier pantalla) cuando inicies; entran solos a la captura.
+
+### Hacer un censo (administrador)
+
+1. **Censo → Nuevo censo**: nombre, duración (20 min por omisión), espiaderos participantes (todos marcados; toca para quitar) y, si quieres, quién va en cada uno (**Asignar**).
+2. **Iniciar ahora**. El servidor fija la hora de inicio y fin para todos y se manda el aviso. También puedes **Guardar para después** e iniciarlo desde **Preparados**.
+3. Se abre el **conteo en vivo**: totales por clase y por espiadero, quién está en cada uno y hace cuánto fue su último registro. **Terminar ahora** cierra antes de tiempo.
+4. Al terminar queda el resumen en **Censos anteriores**.
+
+### Captura (todos)
+
+- La app elige el espiadero por GPS (el que te contenga en su radio). Si no estás en ninguno, eliges de la lista; siempre se puede **Cambiar espiadero**.
+- Cada toque en M1–M4, Hembra o Cría es un registro. **Deshacer último** quita el último.
+- Sin señal se sigue capturando: arriba aparece «N por enviar» y se envían solos al volver la señal. Se aceptan si su hora quedó dentro del censo.
+- En iPhone con la web app no hay vibración al tocar (Safari no lo permite): el botón se ilumina. **No se usa sonido** para no espantar a los animales.
+- Invitados: ven sus propios conteos; al cerrar, los totales por clase. El desglose por espiadero solo lo ve el personal.
+
+### Probar sin ir al rancho (simulación)
+
+```bash
+npm run simular -- --usuarios 8 --minutos 5
+```
+
+Crea 8 usuarios temporales, inicia un censo marcado como «simulación» y los pone a contar en tiempo real (algunos «sin señal» que envían tarde). Abre en la app **Censo → Ver conteo en vivo** para verlo. Al final cierra el censo y borra los usuarios temporales. También puedes iniciar un censo desde la app y pasar su id: `npm run simular -- --censo <id>`.
+
+---
+
+## 7. Cargar el KML real del rancho
 
 El KML debe tener: un **polígono** (lindero), **líneas** (caminos) y **puntos con nombre** (espiaderos). Sirve el que exporta Google Earth, en `.kml` o `.kmz`.
 
@@ -157,7 +191,7 @@ npm run importar-kml -- --aplicar
 
 ---
 
-## 7. Comandos útiles
+## 8. Comandos útiles
 
 | Comando | Para qué |
 |---|---|
@@ -165,6 +199,7 @@ npm run importar-kml -- --aplicar
 | `npm run importar-kml` | Vista previa del KML en `kml/` |
 | `npm run importar-kml -- --aplicar` | Guardar el KML |
 | `npm run cargar-prueba` | Cargar el rancho ficticio |
+| `npm run simular -- --usuarios 8 --minutos 5` | Censo de prueba con usuarios falsos |
 | `npm run probar-servidor` | Probar contra el Supabase real (admin temporal, código, invitado, permisos; limpia al final) |
 | `npm test` | Pruebas del lector de KML y cálculos de distancia |
 | `npm run test:db` | Pruebas de la base de datos (requiere Postgres con PostGIS local) |
@@ -174,7 +209,7 @@ npm run importar-kml -- --aplicar
 
 ---
 
-## 8. Estructura y decisiones técnicas
+## 9. Estructura y decisiones técnicas
 
 ```
 src/app/            Pantallas (Expo Router)
@@ -193,11 +228,12 @@ kml/                Aquí se arrastra el KML real; kml/ejemplo/ trae el ficticio
 - **Web app**: `public/sw.js` guarda la app completa y las imágenes satelitales ya vistas (hasta 4000 mosaicos). Las páginas se piden primero a la red, así cada publicación nueva llega en cuanto hay señal. `scripts/despues-de-exportar.cjs` lista los archivos y versiona el service worker en cada publicación.
 - **Mapa sin señal**: los datos del mapa (lindero, caminos, espiaderos) y el perfil se guardan en el teléfono; la app abre con ellos y los actualiza en segundo plano.
 - **Ortomosaico propio**: cuando lo tengas, se registra en la tabla `capas_base` (XYZ o PMTiles) y la app lo usa en lugar del satelital, sin cambiar código.
+- **Censo**: `registrar_lote` recibe la cola del teléfono (ids generados en el teléfono, sin duplicados) y valida la ventana del servidor; `censo_actual` y `resumen_censo` alimentan la captura y el monitor; Supabase Realtime avisa de inicio/fin y de cada registro. Avisos por Web Push con la función `supabase/functions/avisar-censo` (llaves VAPID guardadas como secretos en Supabase).
 - **Pantallas de muestra** del diseño (`/muestras/ficha`, `/muestras/captura`) solo existen en desarrollo.
 
 ---
 
-## 9. Opcional: app nativa de iPhone (TestFlight)
+## 10. Opcional: app nativa de iPhone (TestFlight)
 
 El mismo código compila como app nativa. Conviene si el personal necesita vibración en cada toque, brillo automático en el censo o avisos más confiables. Requiere cuenta de Apple Developer (99 USD al año) y una cuenta de Expo.
 

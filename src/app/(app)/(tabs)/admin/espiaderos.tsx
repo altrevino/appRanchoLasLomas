@@ -4,10 +4,10 @@
  */
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Aviso, Boton, Campo, Encabezado, Fila, Titulo } from '../../../components/consulta';
-import { useDatosMapa, type Espiadero } from '../../../lib/mapa/datos';
-import { mensajeDeError, supabase } from '../../../lib/supabase';
-import { borde, espacio, radio, tamanos, temas, tipografia } from '../../../theme';
+import { Aviso, Boton, Campo, Encabezado, Fila, Titulo } from '../../../../components/consulta';
+import { useDatosMapa, type Espiadero } from '../../../../lib/mapa/datos';
+import { mensajeDeError, supabase } from '../../../../lib/supabase';
+import { borde, espacio, radio, tamanos, temas, tipografia } from '../../../../theme';
 
 const t = temas.consulta;
 const PASO = 25;

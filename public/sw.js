@@ -117,3 +117,42 @@ self.addEventListener('fetch', (evento) => {
   }
   // Todo lo demás (Supabase, etc.): sin intervenir.
 });
+
+// --- Avisos (Web Push) -------------------------------------------------------
+self.addEventListener('push', (evento) => {
+  let datos = {};
+  try {
+    datos = evento.data ? evento.data.json() : {};
+  } catch {
+    datos = { cuerpo: evento.data && evento.data.text() };
+  }
+  evento.waitUntil(
+    self.registration.showNotification(datos.titulo || 'Rancho Las Lomas', {
+      body: datos.cuerpo || '',
+      icon: '/iconos/icono-192.png',
+      badge: '/iconos/icono-192.png',
+      tag: 'censo',
+      renotify: true,
+      requireInteraction: true,
+      data: { url: datos.url || '/' },
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (evento) => {
+  evento.notification.close();
+  const destino = (evento.notification.data && evento.notification.data.url) || '/';
+  evento.waitUntil(
+    (async () => {
+      const ventanas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const v of ventanas) {
+        if ('focus' in v) {
+          await v.focus();
+          if ('navigate' in v) await v.navigate(destino).catch(() => {});
+          return;
+        }
+      }
+      await self.clients.openWindow(destino);
+    })(),
+  );
+});

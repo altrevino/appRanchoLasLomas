@@ -1,9 +1,9 @@
 import { Redirect } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
-import { BotonCuenta } from '../../components/BotonCuenta';
-import { Encabezado, Titulo } from '../../components/consulta';
-import { esStaff, useSesion } from '../../lib/sesion';
-import { espacio, temas, tipografia } from '../../theme';
+import { BotonCuenta } from '../../../components/BotonCuenta';
+import { Encabezado, Titulo } from '../../../components/consulta';
+import { esStaff, useSesion } from '../../../lib/sesion';
+import { espacio, temas, tipografia } from '../../../theme';
 
 const t = temas.consulta;
 

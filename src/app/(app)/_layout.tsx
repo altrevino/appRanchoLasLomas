@@ -1,55 +1,45 @@
 /**
- * Pestañas según rol:
- *   Invitado: Mapa, Censo
- *   Staff:    Mapa, Censo, Bitácora
- *   Admin:    Mapa, Censo, Bitácora, Administración
+ * Contenedor de la app con sesión: pestañas + captura del censo a pantalla completa.
+ * Vigila el censo en curso: cuando el admin lo inicia, el personal y los invitados
+ * con la app abierta entran solos a la captura (una vez por censo).
  */
-import { Tabs } from 'expo-router';
-import type { ColorValue } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { IconoAdmin, IconoBitacora, IconoCenso, IconoMapa } from '../../components/iconos';
-import { esAdmin, esStaff, useSesion } from '../../lib/sesion';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Stack, router, usePathname } from 'expo-router';
+import { useEffect } from 'react';
+import { useCensoActual } from '../../lib/censo/datos';
+import { useSesion } from '../../lib/sesion';
 import { temas } from '../../theme';
 
-const t = temas.consulta;
+const CLAVE_VISTO = 'rll:censo-llevado';
 
-type IconoComp = (p: { color: string }) => React.ReactNode;
-const icono = (Componente: IconoComp) =>
-  function Icono({ color }: { color: ColorValue }) {
-    return <Componente color={color as string} />;
-  };
+function VigilanteCenso() {
+  const { perfil } = useSesion();
+  const { datos } = useCensoActual();
+  const ruta = usePathname();
+  const censoId = datos?.censo?.estado === 'en_curso' ? datos.censo.id : null;
+
+  useEffect(() => {
+    if (!censoId || perfil?.rol === 'admin' || ruta === '/captura') return;
+    AsyncStorage.getItem(CLAVE_VISTO)
+      .catch(() => null)
+      .then((visto) => {
+        if (visto === censoId) return;
+        AsyncStorage.setItem(CLAVE_VISTO, censoId).catch(() => {});
+        router.push('/captura');
+      });
+  }, [censoId, perfil?.rol, ruta]);
+
+  return null;
+}
 
 export default function LayoutApp() {
-  const { perfil } = useSesion();
-  const insets = useSafeAreaInsets();
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: t.primario,
-        tabBarInactiveTintColor: t.textoSecundario,
-        tabBarStyle: {
-          backgroundColor: t.fondo,
-          borderTopColor: t.borde,
-          height: 66 + insets.bottom,
-          paddingTop: 4,
-          paddingBottom: Math.max(insets.bottom, 6),
-        },
-        tabBarLabelStyle: { fontSize: 12, lineHeight: 16, fontWeight: '600' },
-        sceneStyle: { backgroundColor: t.fondo },
-      }}
-    >
-      <Tabs.Screen name="mapa" options={{ title: 'Mapa', tabBarIcon: icono(IconoMapa) }} />
-      <Tabs.Screen name="censo" options={{ title: 'Censo', tabBarIcon: icono(IconoCenso) }} />
-      <Tabs.Screen
-        name="bitacora"
-        options={{ title: 'Bitácora', tabBarIcon: icono(IconoBitacora), href: esStaff(perfil) ? undefined : null }}
-      />
-      <Tabs.Screen
-        name="admin"
-        options={{ title: 'Admin', tabBarIcon: icono(IconoAdmin), href: esAdmin(perfil) ? undefined : null }}
-      />
-      <Tabs.Screen name="cuenta" options={{ href: null }} />
-    </Tabs>
+    <>
+      <VigilanteCenso />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: temas.consulta.fondo } }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="captura" options={{ contentStyle: { backgroundColor: temas.campo.fondo }, gestureEnabled: false, animation: 'fade' }} />
+      </Stack>
+    </>
   );
 }
