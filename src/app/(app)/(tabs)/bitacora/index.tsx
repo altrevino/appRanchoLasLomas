@@ -11,6 +11,8 @@ import { useMachos } from '../../../../lib/bitacora/datos';
 import { useUrlsFotos } from '../../../../lib/bitacora/fotos';
 import type { EstadoEfectivo } from '../../../../lib/bitacora/tipos';
 import { useEnvios, usePendientes } from '../../../../lib/censo/cola';
+import { esAdmin, useSesion } from '../../../../lib/sesion';
+import { supabase } from '../../../../lib/supabase';
 import { espacio, temas, tipografia } from '../../../../theme';
 
 const t = temas.consulta;
@@ -29,6 +31,28 @@ export default function Bitacora() {
   const pendientes = usePendientes();
   const [filtro, setFiltro] = useState<EstadoEfectivo | 'todos'>('todos');
   const [busqueda, setBusqueda] = useState('');
+  const { perfil } = useSesion();
+  const admin = esAdmin(perfil);
+  const [trofeos, setTrofeos] = useState<Record<string, string>>({});
+
+  // Puntuaciones (solo admin; la base no las entrega a nadie más)
+  useEffect(() => {
+    if (!admin) return;
+    supabase
+      .from('machos_trofeo')
+      .select('macho_id, puntuacion_estimada, puntuacion_real, sistema')
+      .then(({ data }) => {
+        const m: Record<string, string> = {};
+        (data ?? []).forEach((r) => {
+          const partes = [
+            r.puntuacion_real != null ? `Real ${r.puntuacion_real}` : null,
+            r.puntuacion_estimada != null ? `Est. ${r.puntuacion_estimada}` : null,
+          ].filter(Boolean);
+          if (partes.length) m[r.macho_id] = `${partes.join(' · ')} ${r.sistema}`;
+        });
+        setTrofeos(m);
+      });
+  }, [admin, machos]);
 
   // Cuando la cola termina de enviar algo, se recarga la lista.
   const envios = useEnvios();
@@ -81,6 +105,7 @@ export default function Bitacora() {
               key={m.id}
               macho={m}
               url={m.portada_path ? urls[m.portada_path] : undefined}
+              extra={trofeos[m.id]}
               onPress={() => router.push({ pathname: '/bitacora/[id]', params: { id: m.id } })}
             />
           ))}

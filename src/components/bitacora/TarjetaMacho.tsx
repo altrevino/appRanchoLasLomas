@@ -15,7 +15,20 @@ export function haceDias(iso: string | null): string {
 export const tonoEstado = (e: Macho['estado_efectivo']) =>
   e === 'activo' ? 'exito' : e === 'por_validar' ? 'alerta' : e === 'cazado' ? 'neutro' : e === 'sin_ver' ? 'error' : 'neutro';
 
-export function TarjetaMacho({ macho, url, onPress, derecha }: { macho: Macho; url?: string; onPress?: () => void; derecha?: React.ReactNode }) {
+export function TarjetaMacho({
+  macho,
+  url,
+  onPress,
+  derecha,
+  extra,
+}: {
+  macho: Macho;
+  url?: string;
+  onPress?: () => void;
+  derecha?: React.ReactNode;
+  /** Línea adicional (p. ej. puntuación, solo admin). */
+  extra?: string;
+}) {
   return (
     <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : undefined} style={({ pressed }) => [estilos.tarjeta, pressed && { backgroundColor: t.superficieActiva }]}>
       <FotoMacho url={url} style={estilos.foto} tamanoIcono={36} />
@@ -31,6 +44,7 @@ export function TarjetaMacho({ macho, url, onPress, derecha }: { macho: Macho; u
           {haceDias(macho.ultimo_avistamiento_at)}
           {macho.ultimo_espiadero_nombre ? ` · ${macho.ultimo_espiadero_nombre}` : ''}
         </Text>
+        {extra ? <Text style={[tipografia.secundario, { color: t.acentoTexto, fontWeight: '600' }]}>{extra}</Text> : null}
         {derecha ?? (
           <View style={{ flexDirection: 'row' }}>
             <Chip tono={tonoEstado(macho.estado_efectivo)}>{NOMBRE_ESTADO[macho.estado_efectivo]}</Chip>

@@ -165,6 +165,16 @@ Los invitados no ven la bitácora ni los avistamientos en el mapa.
 
 Foto principal, folio, clase y apodo; galería; rasgos; espiaderos donde se ha visto; historial de avistamientos y cambios de clase. El personal puede **Editar** (apodo, clase, rasgos, nota) y elegir la foto principal. El administrador además puede **Validar ejemplar**, **Unir con otro ejemplar** (duplicados: avistamientos y fotos pasan al que se conserva) y **Marcar como cazado**. Los ejemplares activos sin avistamientos en 60 días aparecen como «Sin ver 60 días».
 
+**Fotos**: toca la foto principal (o una miniatura ya elegida) para verla a pantalla completa. Se acerca pellizcando con dos dedos, con doble toque o con los botones **+ / −**; con una sola foto ampliada se arrastra para recorrerla. Las flechas pasan a la siguiente foto.
+
+**Trofeo (solo administrador)**: en la ficha de un ejemplar validado aparece el bloque **Trofeo**, que el personal no ve (ni en la lista ni en la ficha):
+
+- **Puntuación estimada** (Boone and Crockett por omisión, o SCI).
+- **Registrar caza**: fecha (día/mes/año, botón **Hoy**), cazador y, si ya se midió, la puntuación real. El ejemplar queda «Cazado».
+- La **puntuación real** se puede agregar o corregir después en **Agregar puntuación real / editar caza**.
+- **Quitar caza (fue un error)** lo regresa a «Activo» y conserva las puntuaciones.
+- En la lista, el administrador ve «Real 152 · Est. 148.5 B&C» bajo cada ejemplar.
+
 En el **Mapa**, al tocar un espiadero, el personal ve los últimos avistamientos de ese lugar.
 
 ---
@@ -280,6 +290,7 @@ kml/                Aquí se arrastra el KML real; kml/ejemplo/ trae el ficticio
 - **Censo**: `registrar_lote` recibe la cola del teléfono (ids generados en el teléfono, sin duplicados) y valida la ventana del servidor; `censo_actual` y `resumen_censo` alimentan la captura y el monitor; Supabase Realtime avisa de inicio/fin y de cada registro. Avisos por Web Push con la función `supabase/functions/avisar-censo` (llaves VAPID guardadas como secretos en Supabase).
 - **Clases**: M1 1.5 · M2 2.5 · M3 3.5 · M4 4.5 · M5 5.5+ años (`src/config/textos.ts`).
 - **Personal**: la función `supabase/functions/admin-usuarios` crea cuentas, cambia rol y contraseña y desactiva (necesita la llave secreta, por eso vive en el servidor). Solo responde a administradores.
+- **Trofeo**: tabla `machos_trofeo` aparte con RLS solo para administrador (RLS oculta filas, no columnas); se escribe con `guardar_trofeo`.
 - **Bitácora**: el teléfono genera los ids (ejemplar, avistamiento, foto) para guardar sin señal; `registrar_avistamiento` crea el ejemplar si es nuevo, sin duplicar en reintentos, y redirige al destino si el ejemplar se fusionó mientras tanto. La búsqueda de parecidos corre en el teléfono (`src/lib/bitacora/similitud.ts`, con pruebas). Fotos en la carpeta privada `fotos` de Supabase Storage, visibles solo para el personal mediante enlaces firmados de una hora.
 
 ---

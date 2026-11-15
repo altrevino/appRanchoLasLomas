@@ -7,6 +7,8 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { FotoMacho } from '../../../../components/bitacora/FotoMacho';
+import { Trofeo } from '../../../../components/bitacora/Trofeo';
+import { VisorFoto } from '../../../../components/bitacora/VisorFoto';
 import { RasgosEditor, rasgosEnTexto } from '../../../../components/bitacora/RasgosEditor';
 import { haceDias, TarjetaMacho, tonoEstado } from '../../../../components/bitacora/TarjetaMacho';
 import { Aviso, Boton, Campo, Chip, Encabezado, Etiqueta, Filete, Opcion, Titulo } from '../../../../components/consulta';
@@ -37,6 +39,7 @@ export default function FichaMacho() {
     }, [recargar]),
   );
   const [fotoSel, setFotoSel] = useState<string | null>(null);
+  const [visor, setVisor] = useState<number | null>(null);
   const [editando, setEditando] = useState(false);
   const [uniendo, setUniendo] = useState(false);
   const [destino, setDestino] = useState<string | null>(null);
@@ -129,7 +132,19 @@ export default function FichaMacho() {
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
         {/* Tarjeta de trofeo */}
         <View style={estilos.tarjeta}>
-          <FotoMacho url={fotoGrande ? urls[fotoGrande.storage_path] : null} style={estilos.foto} tamanoIcono={96} />
+          <Pressable
+            onPress={() => fotoGrande && setVisor(ficha.fotos.findIndex((f) => f.id === fotoGrande.id))}
+            disabled={!fotoGrande}
+            accessibilityRole="button"
+            accessibilityLabel="Ampliar foto"
+          >
+            <FotoMacho url={fotoGrande ? urls[fotoGrande.storage_path] : null} style={estilos.foto} tamanoIcono={96} />
+            {fotoGrande ? (
+              <View style={estilos.lupa}>
+                <Text style={[tipografia.secundario, { color: t.textoSobrePrimario, fontWeight: '600' }]}>Toca para ampliar</Text>
+              </View>
+            ) : null}
+          </Pressable>
           <View style={estilos.placa}>
             <View style={estilos.placaFila}>
               <Text style={[tipografia.display, { color: t.titulo }]}>{m.folio}</Text>
@@ -168,16 +183,6 @@ export default function FichaMacho() {
             {admin ? (
               <Boton variante="secundario" onPress={() => setUniendo(true)}>
                 Unir con otro ejemplar (duplicado)
-              </Boton>
-            ) : null}
-            {admin && m.estado === 'activo' ? (
-              <Boton variante="peligro" onPress={() => actualizar({ estado: 'cazado' }, 'cazado')} cargando={ocupado === 'cazado'}>
-                Marcar como cazado
-              </Boton>
-            ) : null}
-            {admin && m.estado === 'cazado' ? (
-              <Boton variante="secundario" onPress={() => actualizar({ estado: 'activo' }, 'activo')} cargando={ocupado === 'activo'}>
-                Volver a activo
               </Boton>
             ) : null}
           </View>
@@ -238,13 +243,21 @@ export default function FichaMacho() {
           </View>
         ) : null}
 
+        {/* Trofeo (solo administrador) */}
+        {admin && !editando && !uniendo && m.estado !== 'por_validar' ? (
+          <Trofeo machoId={m.id} cazado={m.estado === 'cazado'} onCambio={recargar} />
+        ) : null}
+
         {/* Galería */}
         {ficha.fotos.length ? (
           <View style={{ gap: espacio.m }}>
             <Titulo nivel={2}>Galería</Titulo>
             <View style={estilos.galeria}>
               {ficha.fotos.map((f) => (
-                <Pressable key={f.id} onPress={() => setFotoSel(f.id)} style={estilos.miniatura} accessibilityRole="button" accessibilityLabel={`Foto del ${fechaCorta(f.tomada_at)}`}>
+                <Pressable
+                  key={f.id}
+                  onPress={() => (f.id === fotoGrande?.id ? setVisor(ficha.fotos.findIndex((x) => x.id === f.id)) : setFotoSel(f.id))}
+                  style={estilos.miniatura} accessibilityRole="button" accessibilityLabel={`Foto del ${fechaCorta(f.tomada_at)}`}>
                   <FotoMacho url={urls[f.storage_path]} style={StyleSheet.absoluteFill} tamanoIcono={28} />
                   <View style={estilos.miniaturaFecha}>
                     <Text style={[tipografia.secundario, { color: t.textoSobrePrimario, fontSize: 12 }]}>
@@ -317,6 +330,13 @@ export default function FichaMacho() {
           </View>
         </View>
       </ScrollView>
+      {visor !== null ? (
+        <VisorFoto
+          fotos={ficha.fotos.map((f) => ({ id: f.id, url: urls[f.storage_path], fecha: f.tomada_at }))}
+          inicial={visor}
+          onCerrar={() => setVisor(null)}
+        />
+      ) : null}
     </View>
   );
 }
@@ -326,6 +346,7 @@ const estilos = StyleSheet.create({
   contenido: { padding: espacio.l, gap: espacio.xl, paddingBottom: espacio.xxxl },
   tarjeta: { backgroundColor: t.superficie, borderWidth: borde.fino, borderColor: t.acento, borderRadius: radio.m, overflow: 'hidden' },
   foto: { aspectRatio: 4 / 3 },
+  lupa: { position: 'absolute', right: espacio.s, bottom: espacio.s, paddingHorizontal: espacio.s, paddingVertical: espacio.xxs, borderRadius: radio.s, backgroundColor: 'rgba(21,29,23,0.7)' },
   placa: { padding: espacio.l, gap: espacio.xs },
   placaFila: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: espacio.m },
   clase: { backgroundColor: t.primario, borderRadius: radio.s, paddingHorizontal: espacio.m, paddingVertical: espacio.xs, borderWidth: borde.medio, borderColor: t.acento },
