@@ -13,6 +13,7 @@ export default function Admin() {
       <ScrollView contentContainerStyle={estilos.contenido}>
         <Titulo>Administración</Titulo>
         <View style={estilos.lista}>
+          <Fila titulo="Mediciones de trofeo" detalle="Puntuación Boone and Crockett y PDF para el cliente" onPress={() => router.push('/admin/mediciones')} />
           <Fila titulo="Invitados y códigos" detalle="Generar código o QR, ver y revocar accesos" onPress={() => router.push('/admin/codigos')} />
           <Fila titulo="Personal" detalle="Agregar personas, rol, contraseña, desactivar" onPress={() => router.push('/admin/personal')} />
           <Fila titulo="Espiaderos" detalle="Nombre y radio de detección" onPress={() => router.push('/admin/espiaderos')} />

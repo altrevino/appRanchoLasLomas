@@ -20,7 +20,7 @@ const archivos = [];
 })(dist);
 
 const precache = archivos.filter(
-  (f) => f.startsWith('/_expo/static/') || f.startsWith('/assets/') || f.startsWith('/iconos/') || f === '/manifest.json',
+  (f) => f.startsWith('/_expo/static/') || f.startsWith('/assets/') || f.startsWith('/iconos/') || f.startsWith('/pdf/') || f === '/manifest.json',
 );
 const hash = crypto.createHash('sha256');
 for (const f of precache.sort()) hash.update(f + fs.statSync(path.join(dist, f)).size);

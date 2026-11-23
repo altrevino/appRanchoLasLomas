@@ -2,7 +2,7 @@
 
 App interna del Rancho Las Lomas: mapa del rancho con espiaderos, censo simultáneo de venado cola blanca, bitácora de machos y medidor de distancias.
 
-Es una **web app**: se abre en **https://app.rancholaslomas.com.mx** desde el iPhone, sin instalar nada. El personal puede agregarla a la pantalla de inicio para usarla como app. Hecha con Expo (React Native para web) y Supabase; el mismo código puede compilarse como app nativa de iPhone más adelante (sección 13).
+Es una **web app**: se abre en **https://app.rancholaslomas.com.mx** desde el iPhone, sin instalar nada. El personal puede agregarla a la pantalla de inicio para usarla como app. Hecha con Expo (React Native para web) y Supabase; el mismo código puede compilarse como app nativa de iPhone más adelante (sección 14).
 
 | Fase | Contenido | Estado |
 |---|---|---|
@@ -201,7 +201,23 @@ Todo se actualiza al moverte. Cierra con **×**.
 
 ---
 
-## 9. Personal del rancho (administrador)
+## 9. Mediciones de trofeo (administrador)
+
+**Admin → Mediciones de trofeo**. Solo los administradores la ven; la base de datos bloquea al personal y a los invitados, y las fotos quedan en una carpeta que la bitácora no puede leer.
+
+1. **Nueva medición**: foto del trofeo en el piso, lugar (Casa, espiadero o fuera de espiadero), fecha y hora, cazador, ciudad o país, arma, guía y quién midió.
+2. **Medidas** en pulgadas y octavos (primer cuadro pulgadas, segundo octavos de 0 a 7): abertura interior, y de cada lado viga principal, G1 a G5, H1 a H4 y puntas anormales AP1 a AP3. **+ Agregar G** y **+ Agregar punta anormal** agregan renglones.
+3. La puntuación se recalcula al escribir, con el método Boone and Crockett:
+   - crédito de abertura = abertura, sin pasar de la viga más larga;
+   - bruta = crédito + viga + G + H de ambos lados;
+   - diferencias = suma de |derecho − izquierdo| de viga, cada G y cada H;
+   - neta típica = bruta − diferencias − anormales; neta no típica = bruta − diferencias + anormales.
+4. **Ejemplar de la bitácora (opcional)**: al guardar, el ejemplar queda **Cazado** con la puntuación bruta como puntuación real, la fecha y el cazador.
+5. **Preparar PDF** y luego **Compartir PDF** (WhatsApp, correo, AirDrop) o **Descargar PDF**. Es una hoja carta con el logotipo, la foto, la puntuación, los datos de la caza y la tabla de medidas. El PDF usa lo último que guardaste.
+
+Cada medición recibe un folio (M-001, M-002…). Se puede editar o borrar después.
+
+## 10. Personal del rancho (administrador)
 
 **Admin → Personal**:
 
@@ -214,7 +230,7 @@ No puedes cambiar tu propio rol ni desactivarte (para no quedarte sin acceso). L
 
 ---
 
-## 10. Cargar el KML real del rancho
+## 11. Cargar el KML real del rancho
 
 El KML debe tener: un **polígono** (lindero), **líneas** (caminos) y **puntos con nombre** (espiaderos). Sirve el que exporta Google Earth, en `.kml` o `.kmz`.
 
@@ -260,7 +276,7 @@ npm run importar-kml -- --aplicar
 
 ---
 
-## 11. Comandos útiles
+## 12. Comandos útiles
 
 | Comando | Para qué |
 |---|---|
@@ -278,7 +294,7 @@ npm run importar-kml -- --aplicar
 
 ---
 
-## 12. Estructura y decisiones técnicas
+## 13. Estructura y decisiones técnicas
 
 ```
 src/app/            Pantallas (Expo Router)
@@ -301,12 +317,13 @@ kml/                Aquí se arrastra el KML real; kml/ejemplo/ trae el ficticio
 - **Clases**: M1 1.5 · M2 2.5 · M3 3.5 · M4 4.5 · M5 5.5+ años (`src/config/textos.ts`).
 - **Personal**: la función `supabase/functions/admin-usuarios` crea cuentas, cambia rol y contraseña y desactiva (necesita la llave secreta, por eso vive en el servidor). Solo responde a administradores.
 - **Invitados en la bitácora**: permiso en `codigos_invitado.bitacora` → `perfiles.bitacora`; columnas `aprobado` en machos, avistamientos y fotos; RLS con `puede_ver_bitacora()` / `puede_escribir_bitacora()`; revisión con `aportes_pendientes()` y `revisar_aporte()`.
+- **Mediciones**: tabla `mediciones` (solo admin) con las medidas en octavos de pulgada (enteros) en `jsonb`; el cálculo B&C está en `src/lib/mediciones/calculo.ts` (con pruebas). El PDF se genera en el teléfono con jsPDF (`src/lib/mediciones/pdf.ts`), que se descarga solo al preparar el primer PDF; el logotipo y la fuente están en `public/pdf/`.
 - **Trofeo**: tabla `machos_trofeo` aparte con RLS solo para administrador (RLS oculta filas, no columnas); se escribe con `guardar_trofeo`.
 - **Bitácora**: el teléfono genera los ids (ejemplar, avistamiento, foto) para guardar sin señal; `registrar_avistamiento` crea el ejemplar si es nuevo, sin duplicar en reintentos, y redirige al destino si el ejemplar se fusionó mientras tanto. La búsqueda de parecidos corre en el teléfono (`src/lib/bitacora/similitud.ts`, con pruebas). Fotos en la carpeta privada `fotos` de Supabase Storage, visibles solo para el personal mediante enlaces firmados de una hora.
 
 ---
 
-## 13. Opcional: app nativa de iPhone (TestFlight)
+## 14. Opcional: app nativa de iPhone (TestFlight)
 
 El mismo código compila como app nativa. Conviene si el personal necesita vibración en cada toque, brillo automático en el censo o avisos más confiables. Requiere cuenta de Apple Developer (99 USD al año) y una cuenta de Expo.
 

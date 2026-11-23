@@ -9,6 +9,7 @@
  *   pone el fondo hueso desde app.json).
  * - assets/favicon.png
  * - public/iconos/*: íconos de la web app (pantalla de inicio del iPhone)
+ * - public/pdf/logo.png: logotipo completo para el PDF de mediciones
  */
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -66,5 +67,9 @@ async function render(page, svg, w, h, archivo) {
   await render(p, svgVenado({ lado: 192, escala: 0.66, fondo: BOSQUE, color: ARENA }), 192, 192, '../public/iconos/icono-192.png');
   await render(p, svgVenado({ lado: 512, escala: 0.66, fondo: BOSQUE, color: ARENA }), 512, 512, '../public/iconos/icono-512.png');
   await render(p, svgVenado({ lado: 48, escala: 0.86, fondo: BOSQUE, color: ARENA }), 48, 48, '../public/iconos/favicon-48.png');
+  // Logotipo para el PDF de mediciones (fondo transparente)
+  fs.mkdirSync(path.join(raiz, 'public/pdf'), { recursive: true });
+  const l = svgCompleto(900);
+  await render(p, l.svg, 900, l.alto, '../public/pdf/logo.png');
   await b.close();
 })();
