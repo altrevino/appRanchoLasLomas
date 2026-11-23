@@ -55,7 +55,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
       }
       const { data, error } = await supabase
         .from('perfiles')
-        .select('id, nombre, rol, expira_en, activo')
+        .select('id, nombre, rol, expira_en, activo, bitacora')
         .eq('id', s.user.id)
         .maybeSingle<Perfil>();
       if (error) {
@@ -157,4 +157,8 @@ export function useSesion() {
 }
 
 export const esStaff = (p: Perfil | null) => p?.rol === 'admin' || p?.rol === 'staff';
+/** Ver la bitácora: personal, o invitado con permiso de lectura o escritura. */
+export const puedeVerBitacora = (p: Perfil | null) => esStaff(p) || p?.bitacora === 'lectura' || p?.bitacora === 'escritura';
+/** Registrar en la bitácora: personal, o invitado con permiso de escritura (queda pendiente de revisión). */
+export const puedeEscribirBitacora = (p: Perfil | null) => esStaff(p) || p?.bitacora === 'escritura';
 export const esAdmin = (p: Perfil | null) => p?.rol === 'admin';

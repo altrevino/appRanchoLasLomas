@@ -4,7 +4,7 @@
  * Con ?macho=<id> (desde una ficha) se omite la búsqueda de parecidos.
  */
 import * as Crypto from 'expo-crypto';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RasgosEditor } from '../../../../components/bitacora/RasgosEditor';
@@ -18,6 +18,7 @@ import { encolar } from '../../../../lib/censo/cola';
 import { espiaderoEnRadio } from '../../../../lib/geo';
 import { useDatosMapa } from '../../../../lib/mapa/datos';
 import { useUbicacion } from '../../../../lib/ubicacion';
+import { puedeEscribirBitacora, useSesion } from '../../../../lib/sesion';
 import { borde, espacio, radio, temas, tipografia } from '../../../../theme';
 
 const t = temas.consulta;
@@ -40,6 +41,8 @@ export default function RegistrarAvistamiento() {
   const [apodo, setApodo] = useState('');
   const [parecidos, setParecidos] = useState<Candidato[] | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const { perfil } = useSesion();
+  const invitado = perfil?.rol === 'invitado';
 
   const espiaderos = useMemo(() => mapa?.espiaderos ?? [], [mapa]);
   const porGps = ubicacion ? espiaderoEnRadio([ubicacion.lon, ubicacion.lat], espiaderos) : null;
@@ -104,6 +107,7 @@ export default function RegistrarAvistamiento() {
   }
 
   const listo = !!clase;
+  if (!puedeEscribirBitacora(perfil)) return <Redirect href="/bitacora" />;
 
   return (
     <View style={estilos.raiz}>
@@ -111,6 +115,7 @@ export default function RegistrarAvistamiento() {
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
         <Titulo>Avistamiento</Titulo>
         {fijo ? <Text style={[tipografia.cuerpoFuerte, { color: t.acentoTexto }]}>{nombreMacho(fijo)}</Text> : null}
+        {invitado ? <Aviso tono="alerta">Lo que registres lo revisará el administrador antes de que aparezca en la bitácora.</Aviso> : null}
 
         {/* Foto */}
         <View style={{ gap: espacio.s }}>
@@ -218,7 +223,9 @@ export default function RegistrarAvistamiento() {
                 Es un ejemplar nuevo
               </Boton>
               <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>
-                Quedará «por validar» hasta que el administrador lo confirme o lo una con otro.
+                {invitado
+                  ? 'Lo verá el administrador para aprobarlo antes de que aparezca en la bitácora.'
+                  : 'Quedará «por validar» hasta que el administrador lo confirme o lo una con otro.'}
               </Text>
             </View>
           </View>

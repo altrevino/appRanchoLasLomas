@@ -9,7 +9,7 @@ import type { ClaseMacho, Forma, CuernoRoto, Macho } from './tipos';
 
 const CLAVE = 'rll:machos';
 const COLUMNAS =
-  'id, folio, apodo, clase_actual, estado, estado_efectivo, nota, foto_portada_id, portada_path, primer_avistamiento_at, ultimo_avistamiento_at, ultimo_espiadero_id, ultimo_espiadero_nombre, ultimo_lon, ultimo_lat, num_avistamientos, creado_at, puntas_izq, puntas_der, forma, puntas_anomalas, cuerno_roto, cicatrices, oreja_marcada';
+  'id, folio, apodo, clase_actual, estado, estado_efectivo, nota, foto_portada_id, portada_path, primer_avistamiento_at, ultimo_avistamiento_at, ultimo_espiadero_id, ultimo_espiadero_nombre, ultimo_lon, ultimo_lat, num_avistamientos, creado_at, aprobado, puntas_izq, puntas_der, forma, puntas_anomalas, cuerno_roto, cicatrices, oreja_marcada';
 
 const consultarMachos = () =>
   supabase.from('v_machos').select(COLUMNAS).neq('estado', 'fusionado').order('ultimo_avistamiento_at', { ascending: false, nullsFirst: false });
@@ -45,6 +45,7 @@ export function useMachos() {
 
 export interface AvistamientoFicha {
   id: string;
+  aprobado: boolean;
   observado_at: string;
   clase_observada: ClaseMacho | null;
   nota: string | null;
@@ -84,7 +85,7 @@ export function useFicha(id: string | undefined) {
       supabase.from('v_machos').select(COLUMNAS + ', fusionado_en').eq('id', id).maybeSingle(),
       supabase
         .from('avistamientos')
-        .select('id, observado_at, clase_observada, nota, espiadero_id, puntas_izq, puntas_der, forma, cuerno_roto, espiaderos(nombre), perfiles(nombre)')
+        .select('id, observado_at, clase_observada, nota, espiadero_id, aprobado, puntas_izq, puntas_der, forma, cuerno_roto, espiaderos(nombre), perfiles(nombre)')
         .eq('macho_id', id)
         .order('observado_at', { ascending: false }),
       supabase.from('fotos').select('id, storage_path, tomada_at').eq('macho_id', id).order('tomada_at', { ascending: false }),

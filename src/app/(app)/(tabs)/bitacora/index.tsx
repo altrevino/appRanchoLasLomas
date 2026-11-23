@@ -11,7 +11,7 @@ import { useMachos } from '../../../../lib/bitacora/datos';
 import { useUrlsFotos } from '../../../../lib/bitacora/fotos';
 import type { EstadoEfectivo } from '../../../../lib/bitacora/tipos';
 import { useEnvios, usePendientes } from '../../../../lib/censo/cola';
-import { esAdmin, useSesion } from '../../../../lib/sesion';
+import { esAdmin, puedeEscribirBitacora, useSesion } from '../../../../lib/sesion';
 import { supabase } from '../../../../lib/supabase';
 import { espacio, temas, tipografia } from '../../../../theme';
 
@@ -34,6 +34,13 @@ export default function Bitacora() {
   const { perfil } = useSesion();
   const admin = esAdmin(perfil);
   const [trofeos, setTrofeos] = useState<Record<string, string>>({});
+  const [porRevisar, setPorRevisar] = useState(0);
+
+  // Aportes de invitados por revisar (admin)
+  useEffect(() => {
+    if (!admin) return;
+    supabase.rpc('aportes_pendientes').then(({ data }) => setPorRevisar(Array.isArray(data) ? data.length : 0));
+  }, [admin, machos]);
 
   // Puntuaciones (solo admin; la base no las entrega a nadie más)
   useEffect(() => {
@@ -80,7 +87,19 @@ export default function Bitacora() {
       <Encabezado atras={false} derecha={<BotonCuenta />} />
       <ScrollView contentContainerStyle={estilos.contenido} keyboardShouldPersistTaps="handled">
         <Titulo>Bitácora</Titulo>
-        <Boton onPress={() => router.push('/bitacora/registrar')}>Registrar avistamiento</Boton>
+        {puedeEscribirBitacora(perfil) ? <Boton onPress={() => router.push('/bitacora/registrar')}>Registrar avistamiento</Boton> : null}
+        {admin && porRevisar ? (
+          <Boton variante="secundario" onPress={() => router.push('/bitacora/revisar')}>
+            {`Por revisar (${porRevisar}) · aportes de invitados`}
+          </Boton>
+        ) : null}
+        {perfil?.rol === 'invitado' ? (
+          <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>
+            {puedeEscribirBitacora(perfil)
+              ? 'Lo que registres lo revisará el administrador antes de que lo vean los demás.'
+              : 'Puedes consultar la bitácora; no registrar.'}
+          </Text>
+        ) : null}
         {pendientes ? <Aviso tono="alerta">{`${pendientes} registro(s) por enviar. Se envían solos al haber señal.`}</Aviso> : null}
         {sinConexion ? <Aviso tono="alerta">Sin conexión: se muestra la última lista descargada.</Aviso> : null}
         {porValidar ? <Aviso tono="alerta">{`${porValidar} ejemplar(es) por validar.`}</Aviso> : null}

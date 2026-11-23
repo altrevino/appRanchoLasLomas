@@ -19,7 +19,7 @@ import { useDesnivel } from '../../../lib/elevacion';
 import { distanciaM, puntoCardinal, rumboGrados, type LonLat } from '../../../lib/geo';
 import { useDatosMapa, type Espiadero } from '../../../lib/mapa/datos';
 import type { PuntoAvistamiento } from '../../../lib/mapa/estilo';
-import { esStaff, useSesion } from '../../../lib/sesion';
+import { puedeVerBitacora, useSesion } from '../../../lib/sesion';
 import { supabase } from '../../../lib/supabase';
 import { useUbicacion } from '../../../lib/ubicacion';
 import { borde, espacio, radio, temas, tipografia } from '../../../theme';
@@ -41,7 +41,8 @@ function textoDesnivel(d: number) {
 
 export default function Mapa() {
   const { perfil } = useSesion();
-  const staff = esStaff(perfil);
+  // Personal o invitados con permiso de bitácora
+  const staff = puedeVerBitacora(perfil);
   const { datos, error, cargando, recargar } = useDatosMapa();
   const { ubicacion, permiso } = useUbicacion();
   const [objetivo, setObjetivo] = useState<Objetivo | null>(null);

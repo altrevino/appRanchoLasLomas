@@ -33,6 +33,8 @@ export interface Perfil {
   rol: Rol;
   expira_en: string | null;
   activo: boolean;
+  /** Permiso de bitácora (invitados): 'ninguno' | 'lectura' | 'escritura'. */
+  bitacora?: 'ninguno' | 'lectura' | 'escritura';
 }
 
 /** Mensaje entendible para errores de Supabase. */

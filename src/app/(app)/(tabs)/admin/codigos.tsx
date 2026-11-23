@@ -19,12 +19,22 @@ interface Codigo {
   usos: number;
   usos_max: number | null;
   nota: string | null;
+  bitacora: Permiso;
 }
 interface Invitado {
   id: string;
   nombre: string;
   expira_en: string | null;
+  bitacora: Permiso;
 }
+
+type Permiso = 'ninguno' | 'lectura' | 'escritura';
+const PERMISOS: [Permiso, string][] = [
+  ['ninguno', 'Sin bitácora'],
+  ['lectura', 'Solo ver'],
+  ['escritura', 'Ver y registrar'],
+];
+const nombrePermiso = (p: Permiso) => PERMISOS.find((x) => x[0] === p)?.[1] ?? 'Sin bitácora';
 
 const vigencias = [
   { etiqueta: '6 horas', horas: 6 },
@@ -45,8 +55,8 @@ const fecha = (iso: string) => new Date(iso).toLocaleString('es-MX', { weekday: 
 function consultar() {
   const ahora = new Date().toISOString();
   return Promise.all([
-    supabase.from('codigos_invitado').select('id, codigo, vigente_hasta, usos, usos_max, nota').is('revocado_at', null).gt('vigente_hasta', ahora).order('creado_at', { ascending: false }),
-    supabase.from('perfiles').select('id, nombre, expira_en').eq('rol', 'invitado').eq('activo', true).gt('expira_en', ahora).order('nombre'),
+    supabase.from('codigos_invitado').select('id, codigo, vigente_hasta, usos, usos_max, nota, bitacora').is('revocado_at', null).gt('vigente_hasta', ahora).order('creado_at', { ascending: false }),
+    supabase.from('perfiles').select('id, nombre, expira_en, bitacora').eq('rol', 'invitado').eq('activo', true).gt('expira_en', ahora).order('nombre'),
   ]);
 }
 
@@ -54,6 +64,8 @@ export default function Codigos() {
   const [horas, setHoras] = useState(24);
   const [usosMax, setUsosMax] = useState<number | null>(null);
   const [nota, setNota] = useState('');
+  const [permiso, setPermiso] = useState<Permiso>('ninguno');
+  const [cambiando, setCambiando] = useState<string | null>(null);
   const [nuevo, setNuevo] = useState<Codigo | null>(null);
   const [codigos, setCodigos] = useState<Codigo[]>([]);
   const [invitados, setInvitados] = useState<Invitado[]>([]);
@@ -78,7 +90,12 @@ export default function Codigos() {
   async function generar() {
     setError(null);
     setGenerando(true);
-    const { data, error: e } = await supabase.rpc('generar_codigo', { p_horas: horas, p_usos_max: usosMax, p_nota: nota || null });
+    const { data, error: e } = await supabase.rpc('generar_codigo', {
+      p_horas: horas,
+      p_usos_max: usosMax,
+      p_nota: nota || null,
+      p_bitacora: permiso,
+    });
     setGenerando(false);
     if (e) return setError(mensajeDeError(e));
     setNuevo(data as Codigo);
@@ -143,6 +160,21 @@ export default function Codigos() {
               </Opcion>
             ))}
           </View>
+          <Etiqueta>Bitácora de machos</Etiqueta>
+          <View style={estilos.opciones}>
+            {PERMISOS.map(([v, txt]) => (
+              <Opcion key={v} activa={permiso === v} onPress={() => setPermiso(v)}>
+                {txt}
+              </Opcion>
+            ))}
+          </View>
+          <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>
+            {permiso === 'ninguno'
+              ? 'No verán la bitácora.'
+              : permiso === 'lectura'
+                ? 'Podrán consultar fichas y fotos, sin registrar ni ver puntuaciones.'
+                : 'Podrán registrar avistamientos; tú los apruebas antes de que los vean los demás.'}
+          </Text>
           <Campo etiqueta="Nota (opcional)" value={nota} onChangeText={setNota} placeholder="Ej. Invitados de Luis, temporada 2026" maxLength={80} />
           {error ? <Aviso>{error}</Aviso> : null}
           <Boton onPress={generar} cargando={generando}>
@@ -158,7 +190,7 @@ export default function Codigos() {
               <Fila
                 key={c.id}
                 titulo={`${c.codigo.slice(0, 3)} ${c.codigo.slice(3)}`}
-                detalle={`Vence ${fecha(c.vigente_hasta)} · ${c.usos}${c.usos_max ? ` de ${c.usos_max}` : ''} uso(s)${c.nota ? ` · ${c.nota}` : ''}`}
+                detalle={`Vence ${fecha(c.vigente_hasta)} · ${c.usos}${c.usos_max ? ` de ${c.usos_max}` : ''} uso(s) · Bitácora: ${nombrePermiso(c.bitacora)}${c.nota ? ` · ${c.nota}` : ''}`}
                 derecha={
                   <Text onPress={() => revocar(c.id)} style={[tipografia.secundario, { color: t.error, fontWeight: '600' }]} accessibilityRole="button">
                     {porRevocar === c.id ? '¿Revocar? Toca otra vez' : 'Revocar'}
@@ -174,7 +206,38 @@ export default function Codigos() {
           {invitados.length === 0 ? <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>Nadie ha entrado con código.</Text> : null}
           <View style={estilos.lista}>
             {invitados.map((i) => (
-              <Fila key={i.id} titulo={i.nombre} detalle={i.expira_en ? `Hasta ${fecha(i.expira_en)}` : undefined} />
+              <View key={i.id}>
+                <Fila
+                  titulo={i.nombre}
+                  detalle={`${i.expira_en ? `Hasta ${fecha(i.expira_en)} · ` : ''}Bitácora: ${nombrePermiso(i.bitacora)}`}
+                  derecha={
+                    <Text
+                      onPress={() => setCambiando(cambiando === i.id ? null : i.id)}
+                      style={[tipografia.secundario, { color: t.primario, fontWeight: '600' }]}
+                      accessibilityRole="button"
+                    >
+                      {cambiando === i.id ? 'Listo' : 'Permiso'}
+                    </Text>
+                  }
+                />
+                {cambiando === i.id ? (
+                  <View style={[estilos.opciones, { padding: espacio.m, backgroundColor: t.superficie }]}>
+                    {PERMISOS.map(([v, txt]) => (
+                      <Opcion
+                        key={v}
+                        activa={i.bitacora === v}
+                        onPress={async () => {
+                          const { error: e } = await supabase.rpc('permiso_bitacora_invitado', { p_perfil: i.id, p_bitacora: v });
+                          if (e) setError(mensajeDeError(e));
+                          else cargar();
+                        }}
+                      >
+                        {txt}
+                      </Opcion>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
             ))}
           </View>
         </View>

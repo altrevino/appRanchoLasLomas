@@ -1,10 +1,10 @@
 import { Redirect, Stack } from 'expo-router';
-import { esStaff, useSesion } from '../../../../lib/sesion';
+import { puedeVerBitacora, useSesion } from '../../../../lib/sesion';
 import { temas } from '../../../../theme';
 
-/** Bitácora: solo administrador y personal. */
+/** Bitácora: personal e invitados con permiso. */
 export default function LayoutBitacora() {
   const { perfil } = useSesion();
-  if (!esStaff(perfil)) return <Redirect href="/mapa" />;
+  if (!puedeVerBitacora(perfil)) return <Redirect href="/mapa" />;
   return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: temas.consulta.fondo } }} />;
 }

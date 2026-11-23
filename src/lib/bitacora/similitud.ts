@@ -97,7 +97,7 @@ export function puntuar(m: Macho, o: Observacion): Candidato {
 /** Candidatos ordenados de más a menos parecido (excluye cazados y fusionados). */
 export function candidatos(machos: Macho[], o: Observacion, limite = 8): Candidato[] {
   return machos
-    .filter((m) => m.estado !== 'fusionado' && m.estado !== 'cazado')
+    .filter((m) => m.estado !== 'fusionado' && m.estado !== 'cazado' && m.aprobado !== false)
     .map((m) => puntuar(m, o))
     .filter((c) => c.parecido >= 25)
     .sort((a, b) => b.parecido - a.parecido || b.puntos - a.puntos)

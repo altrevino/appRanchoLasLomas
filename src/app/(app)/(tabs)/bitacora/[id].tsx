@@ -17,7 +17,7 @@ import { useUrlsFotos } from '../../../../lib/bitacora/fotos';
 import { CLASES_MACHO, NOMBRE_ESTADO, type ClaseMacho, type Rasgos } from '../../../../lib/bitacora/tipos';
 import { useEnvios } from '../../../../lib/censo/cola';
 import { fechaCorta } from '../../../../lib/censo/tiempo';
-import { esAdmin, useSesion } from '../../../../lib/sesion';
+import { esAdmin, esStaff, puedeEscribirBitacora, useSesion } from '../../../../lib/sesion';
 import { mensajeDeError, supabase } from '../../../../lib/supabase';
 import { borde, espacio, radio, temas, tipografia } from '../../../../theme';
 
@@ -27,6 +27,7 @@ export default function FichaMacho() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { perfil } = useSesion();
   const admin = esAdmin(perfil);
+  const staff = esStaff(perfil);
   const { ficha, error, recargar } = useFicha(id);
   const { machos } = useMachos();
   const envios = useEnvios();
@@ -114,7 +115,7 @@ export default function FichaMacho() {
   const historial = [
     ...ficha.avistamientos.map((a) => ({
       fecha: a.observado_at,
-      texto: `Avistamiento · ${a.espiaderos?.nombre ?? 'fuera de espiadero'}${a.clase_observada ? ` · ${a.clase_observada}` : ''}`,
+      texto: `Avistamiento · ${a.espiaderos?.nombre ?? 'fuera de espiadero'}${a.clase_observada ? ` · ${a.clase_observada}` : ''}${a.aprobado === false ? ' · pendiente de revisión' : ''}`,
       por: a.perfiles?.nombre ?? '—',
       nota: a.nota,
     })),
@@ -169,17 +170,25 @@ export default function FichaMacho() {
         {/* Acciones */}
         {!editando && !uniendo ? (
           <View style={{ gap: espacio.s }}>
-            {m.estado !== 'cazado' ? (
+            {m.aprobado === false ? (
+              <Aviso tono="alerta">Pendiente de revisión del administrador: todavía no lo ven los demás.</Aviso>
+            ) : null}
+            {admin && m.aprobado === false ? (
+              <Boton onPress={() => router.push('/bitacora/revisar')}>Revisar en «Por revisar»</Boton>
+            ) : null}
+            {m.estado !== 'cazado' && puedeEscribirBitacora(perfil) ? (
               <Boton onPress={() => router.push({ pathname: '/bitacora/registrar', params: { macho: m.id } })}>Registrar avistamiento</Boton>
             ) : null}
-            {admin && m.estado === 'por_validar' ? (
+            {admin && m.estado === 'por_validar' && m.aprobado !== false ? (
               <Boton onPress={() => actualizar({ estado: 'activo' }, 'validar')} cargando={ocupado === 'validar'}>
                 Validar ejemplar
               </Boton>
             ) : null}
-            <Boton variante="secundario" onPress={empezarEdicion}>
-              Editar
-            </Boton>
+            {staff ? (
+              <Boton variante="secundario" onPress={empezarEdicion}>
+                Editar
+              </Boton>
+            ) : null}
             {admin ? (
               <Boton variante="secundario" onPress={() => setUniendo(true)}>
                 Unir con otro ejemplar (duplicado)
@@ -244,7 +253,7 @@ export default function FichaMacho() {
         ) : null}
 
         {/* Trofeo (solo administrador) */}
-        {admin && !editando && !uniendo && m.estado !== 'por_validar' ? (
+        {admin && !editando && !uniendo && m.estado !== 'por_validar' && m.aprobado !== false ? (
           <Trofeo machoId={m.id} cazado={m.estado === 'cazado'} onCambio={recargar} />
         ) : null}
 
@@ -268,7 +277,7 @@ export default function FichaMacho() {
                 </Pressable>
               ))}
             </View>
-            {fotoGrande && fotoGrande.id !== m.foto_portada_id ? (
+            {staff && fotoGrande && fotoGrande.id !== m.foto_portada_id ? (
               <Boton variante="secundario" onPress={() => actualizar({ foto_portada_id: fotoGrande.id }, 'portada')} cargando={ocupado === 'portada'}>
                 Usar esta foto como principal
               </Boton>

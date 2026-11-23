@@ -47,7 +47,9 @@ export function TarjetaMacho({
         {extra ? <Text style={[tipografia.secundario, { color: t.acentoTexto, fontWeight: '600' }]}>{extra}</Text> : null}
         {derecha ?? (
           <View style={{ flexDirection: 'row' }}>
-            <Chip tono={tonoEstado(macho.estado_efectivo)}>{NOMBRE_ESTADO[macho.estado_efectivo]}</Chip>
+            <Chip tono={macho.aprobado === false ? 'alerta' : tonoEstado(macho.estado_efectivo)}>
+              {macho.aprobado === false ? 'Pendiente de revisión' : NOMBRE_ESTADO[macho.estado_efectivo]}
+            </Chip>
           </View>
         )}
       </View>

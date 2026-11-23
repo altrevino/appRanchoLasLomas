@@ -23,6 +23,7 @@ const base = (p: Partial<Macho>): Macho => ({
   ultimo_lat: 27.0665,
   num_avistamientos: 3,
   creado_at: '2026-01-01T00:00:00Z',
+  aprobado: true,
   ...p,
 });
 const obs = (p: Partial<Observacion>): Observacion => ({
@@ -65,4 +66,9 @@ test('excluye cazados y fusionados', () => {
 test('sin rasgos conocidos, decide por clase, lugar y fecha', () => {
   const r = candidatos([base({ folio: 'cerca' }), base({ folio: 'lejos', ultimo_espiadero_id: 'taza', ultimo_lon: -100.0793, ultimo_lat: 27.0509 })], obs({}));
   assert.equal(r[0].macho.folio, 'cerca');
+});
+
+test('no propone ejemplares pendientes de revisión', () => {
+  const r = candidatos([base({ folio: 'pend', aprobado: false }), base({ folio: 'ok' })], obs({}));
+  assert.deepEqual(r.map((c) => c.macho.folio), ['ok']);
 });

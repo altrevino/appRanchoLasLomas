@@ -8,7 +8,7 @@ import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconoAdmin, IconoBitacora, IconoCenso, IconoMapa } from '../../../components/iconos';
-import { esAdmin, esStaff, useSesion } from '../../../lib/sesion';
+import { esAdmin, puedeVerBitacora, useSesion } from '../../../lib/sesion';
 import { temas } from '../../../theme';
 
 const t = temas.consulta;
@@ -43,7 +43,7 @@ export default function LayoutApp() {
       <Tabs.Screen name="censo" options={{ title: 'Censo', tabBarIcon: icono(IconoCenso) }} />
       <Tabs.Screen
         name="bitacora"
-        options={{ title: 'Bitácora', tabBarIcon: icono(IconoBitacora), href: esStaff(perfil) ? undefined : null }}
+        options={{ title: 'Bitácora', tabBarIcon: icono(IconoBitacora), href: puedeVerBitacora(perfil) ? undefined : null }}
       />
       <Tabs.Screen
         name="admin"

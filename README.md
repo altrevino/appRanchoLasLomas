@@ -146,9 +146,19 @@ Crea 8 usuarios temporales, inicia un censo marcado como «simulación» y los p
 
 ---
 
-## 7. Bitácora de machos (administrador y personal)
+## 7. Bitácora de machos
 
-Los invitados no ven la bitácora ni los avistamientos en el mapa.
+**Quién la ve**: administrador y personal siempre. Los invitados según el permiso del código con el que entraron (se elige al generarlo en **Admin → Invitados y códigos**, y se puede cambiar por persona en «Invitados con acceso» → **Permiso**):
+
+| Permiso | Qué puede hacer el invitado |
+|---|---|
+| Sin bitácora | Nada (no ve la pestaña) |
+| Solo ver | Consultar fichas, fotos y avistamientos aprobados |
+| Ver y registrar | Además, registrar avistamientos con foto |
+
+Ningún invitado ve puntuaciones ni datos de caza, ni puede editar fichas.
+
+**Revisión del administrador**: lo que registra un invitado queda **pendiente**. Solo lo ven el administrador y quien lo registró (con la marca «Pendiente de revisión»); no cuenta para «último visto», foto principal ni el mapa. En **Bitácora → Por revisar** el administrador ve cada aporte con su foto y autor y elige **Aprobar** (aparece para todos; si era un ejemplar nuevo queda activo), **Rechazar** (se borra, foto incluida) o **Ver ficha** (para unirlo con un ejemplar existente si es duplicado). Lo que registra el personal no pasa por revisión.
 
 ### Registrar un avistamiento
 
@@ -290,6 +300,7 @@ kml/                Aquí se arrastra el KML real; kml/ejemplo/ trae el ficticio
 - **Censo**: `registrar_lote` recibe la cola del teléfono (ids generados en el teléfono, sin duplicados) y valida la ventana del servidor; `censo_actual` y `resumen_censo` alimentan la captura y el monitor; Supabase Realtime avisa de inicio/fin y de cada registro. Avisos por Web Push con la función `supabase/functions/avisar-censo` (llaves VAPID guardadas como secretos en Supabase).
 - **Clases**: M1 1.5 · M2 2.5 · M3 3.5 · M4 4.5 · M5 5.5+ años (`src/config/textos.ts`).
 - **Personal**: la función `supabase/functions/admin-usuarios` crea cuentas, cambia rol y contraseña y desactiva (necesita la llave secreta, por eso vive en el servidor). Solo responde a administradores.
+- **Invitados en la bitácora**: permiso en `codigos_invitado.bitacora` → `perfiles.bitacora`; columnas `aprobado` en machos, avistamientos y fotos; RLS con `puede_ver_bitacora()` / `puede_escribir_bitacora()`; revisión con `aportes_pendientes()` y `revisar_aporte()`.
 - **Trofeo**: tabla `machos_trofeo` aparte con RLS solo para administrador (RLS oculta filas, no columnas); se escribe con `guardar_trofeo`.
 - **Bitácora**: el teléfono genera los ids (ejemplar, avistamiento, foto) para guardar sin señal; `registrar_avistamiento` crea el ejemplar si es nuevo, sin duplicar en reintentos, y redirige al destino si el ejemplar se fusionó mientras tanto. La búsqueda de parecidos corre en el teléfono (`src/lib/bitacora/similitud.ts`, con pruebas). Fotos en la carpeta privada `fotos` de Supabase Storage, visibles solo para el personal mediante enlaces firmados de una hora.
 

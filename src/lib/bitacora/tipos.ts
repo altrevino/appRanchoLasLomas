@@ -43,6 +43,8 @@ export interface Macho extends Rasgos {
   ultimo_lat: number | null;
   num_avistamientos: number;
   creado_at: string;
+  /** false: lo registró un invitado y está pendiente de revisión del admin. */
+  aprobado: boolean;
 }
 
 export const NOMBRE_ESTADO: Record<EstadoEfectivo, string> = {
