@@ -130,14 +130,9 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
     ...(r.creditoAbertura < (d.abertura ?? 0) ? [['Crédito de abertura', formato(r.creditoAbertura), false] as [string, string, boolean]] : []),
     ['Suma lado derecho', formato(r.sumaDer), false],
     ['Suma lado izquierdo', formato(r.sumaIzq), false],
-    ['PUNTUACIÓN BRUTA', formato(r.bruta), true],
-    ['Diferencias', r.diferencias ? `- ${formato(r.diferencias)}` : '0', false],
-    ['Puntas anormales', formato(r.anormales), false],
-    ['NETA TÍPICA', formato(r.netaTipica), true],
-    ['NETA NO TÍPICA', formato(r.netaNoTipica), true],
     ['Número de puntas', `${r.puntasDer} der. · ${r.puntasIzq} izq.`, false],
   ];
-  const altoR = 9 + filasR.length * 5.4;
+  const altoR = 9 + filasR.length * 5.4 + 13;
   let altoFoto = 0;
   if (d.foto) {
     const p = doc.getImageProperties(d.foto);
@@ -172,6 +167,14 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
     doc.text(v, xR + anchoR - 4, yr, { align: 'right' });
     yr += 5.4;
   }
+  // Puntuación bruta destacada al pie del recuadro
+  linea(xR + 4, yr - 2.6, xR + anchoR - 4, yr - 2.6, ARENA, 0.3);
+  fuenteTexto(9, true);
+  color(BOSQUE);
+  doc.text('PUNTUACIÓN BRUTA', xR + 4, yr + 5);
+  doc.setFont(titulo, titulo === 'Cinzel' ? 'normal' : 'bold');
+  doc.setFontSize(22);
+  doc.text(formato(r.bruta), xR + anchoR - 4, yr + 6, { align: 'right' });
   y += Math.max(altoFoto, altoR) + 6;
 
   // Datos de la caza, en dos columnas
@@ -212,9 +215,9 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
   y += 6;
 
   // Tabla de medidas
-  // Medida | Derecho | Izquierdo | Diferencia (borde derecho de cada columna numérica)
+  // Measurement | Right | Left | Total (borde derecho de cada columna numérica). En inglés para el cliente.
   const fin = ANCHO - M;
-  const bordes = [M + 102, M + 142, fin];
+  const bordes = [M + 112, M + 148, fin];
   const ALTO_FILA = 4.9;
   const encabezado = (titulos: string[]) => {
     asegurar(ALTO_FILA * 2);
@@ -234,20 +237,21 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
     y += ALTO_FILA;
     linea(M, y, fin, y);
   };
-  const dif = (p: Par) => (p.d == null && p.i == null ? '' : formato(Math.abs((p.d ?? 0) - (p.i ?? 0))));
+  const suma = (p: Par) => (p.d == null && p.i == null ? '' : formato((p.d ?? 0) + (p.i ?? 0)));
 
-  encabezado(['MEDIDA', 'DERECHO', 'IZQUIERDO', 'DIFERENCIA']);
-  fila('Longitud de viga principal', [formato(d.medidas.viga.d), formato(d.medidas.viga.i), dif(d.medidas.viga)]);
+  encabezado(['MEASUREMENT', 'RIGHT', 'LEFT', 'TOTAL']);
+  fila(r.creditoAbertura < (d.abertura ?? 0) ? `Inside Spread  (${formato(d.abertura)}, credit limited to longer main beam)` : 'Inside Spread', ['', '', formato(r.creditoAbertura)]);
+  fila('Main Beam Length', [formato(d.medidas.viga.d), formato(d.medidas.viga.i), suma(d.medidas.viga)]);
   const ultimaG = d.medidas.g.reduce((u, p, i) => (p.d != null || p.i != null ? i : u), -1);
-  d.medidas.g.slice(0, Math.max(ultimaG + 1, 1)).forEach((p, i) => fila(`G${i + 1}  Longitud de punta`, [formato(p.d), formato(p.i), dif(p)]));
-  d.medidas.h.forEach((p, i) => fila(`H${i + 1}  Circunferencia`, [formato(p.d), formato(p.i), dif(p)]));
-  fila('Subtotal', [formato(r.sumaDer), formato(r.sumaIzq), formato(r.diferencias)], true);
+  d.medidas.g.slice(0, Math.max(ultimaG + 1, 1)).forEach((p, i) => fila(`G${i + 1}  Point Length`, [formato(p.d), formato(p.i), suma(p)]));
+  d.medidas.h.forEach((p, i) => fila(`H${i + 1}  Circumference`, [formato(p.d), formato(p.i), suma(p)]));
+  fila('GROSS SCORE', [formato(r.sumaDer), formato(r.sumaIzq), formato(r.bruta)], true);
   y += 4;
 
   const anormales = d.medidas.ap.filter((p) => p.d != null || p.i != null);
-  encabezado(['PUNTAS ANORMALES', 'DERECHO', 'IZQUIERDO', 'TOTAL']);
+  encabezado(['ABNORMAL POINTS', 'RIGHT', 'LEFT', 'TOTAL']);
   if (!anormales.length) {
-    fila('Sin puntas anormales', ['', '', '']);
+    fila('No abnormal points', ['', '', '']);
   } else {
     anormales.forEach((p, i) => fila(`AP${i + 1}`, [formato(p.d), formato(p.i), formato((p.d ?? 0) + (p.i ?? 0))]));
     fila('Total', [formato(r.anormalesDer), formato(r.anormalesIzq), formato(r.anormales)], true);
