@@ -3,11 +3,13 @@
  * Todo en OCTAVOS de pulgada (enteros): 18 4/8" = 148.
  *
  *   Crédito de abertura = abertura interior, sin exceder la viga principal más larga.
- *   Suma por lado       = viga + G1..Gn + H1..H4.
- *   Bruta               = crédito de abertura + suma derecha + suma izquierda.
+ *   Suma por lado       = viga + G1..Gn + H1..H4 + puntas anormales.
+ *   Bruta               = crédito de abertura + suma derecha + suma izquierda
+ *                         (todo suma, sin deducciones: es la que cobra el rancho).
+ * Referencia (solo en pantalla, para el admin):
  *   Diferencias         = Σ |derecho − izquierdo| de viga, cada G y cada H.
- *   Neta típica         = bruta − diferencias − puntas anormales.
- *   Neta no típica      = bruta − diferencias + puntas anormales.
+ *   Neta típica         = (bruta sin anormales) − diferencias − puntas anormales.
+ *   Neta no típica      = (bruta sin anormales) − diferencias + puntas anormales.
  * Puntas por lado: G y anormales de al menos 1" más la punta de la viga.
  */
 
@@ -53,13 +55,16 @@ export function calcular(abertura: Valor, m: Medidas): Resultado {
   const tipicas = [m.viga, ...m.g, ...m.h];
   const vigaMayor = Math.max(v(m.viga.d), v(m.viga.i));
   const creditoAbertura = Math.min(v(abertura), vigaMayor);
-  const sumaDer = suma(tipicas.map((p) => p.d));
-  const sumaIzq = suma(tipicas.map((p) => p.i));
-  const bruta = creditoAbertura + sumaDer + sumaIzq;
+  const tipicasDer = suma(tipicas.map((p) => p.d));
+  const tipicasIzq = suma(tipicas.map((p) => p.i));
+  const brutaTipica = creditoAbertura + tipicasDer + tipicasIzq;
   const diferencias = tipicas.reduce((a, p) => a + Math.abs(v(p.d) - v(p.i)), 0);
   const anormalesDer = suma(m.ap.map((p) => p.d));
   const anormalesIzq = suma(m.ap.map((p) => p.i));
   const anormales = anormalesDer + anormalesIzq;
+  const sumaDer = tipicasDer + anormalesDer;
+  const sumaIzq = tipicasIzq + anormalesIzq;
+  const bruta = creditoAbertura + sumaDer + sumaIzq;
   const cuenta = (xs: Valor[]) => xs.filter((x) => v(x) >= PULGADA).length;
   const tieneViga = (x: Valor) => (v(x) > 0 ? 1 : 0);
   return {
@@ -71,8 +76,8 @@ export function calcular(abertura: Valor, m: Medidas): Resultado {
     anormalesDer,
     anormalesIzq,
     anormales,
-    netaTipica: bruta - diferencias - anormales,
-    netaNoTipica: bruta - diferencias + anormales,
+    netaTipica: brutaTipica - diferencias - anormales,
+    netaNoTipica: brutaTipica - diferencias + anormales,
     puntasDer: tieneViga(m.viga.d) + cuenta(m.g.map((p) => p.d)) + cuenta(m.ap.map((p) => p.d)),
     puntasIzq: tieneViga(m.viga.i) + cuenta(m.g.map((p) => p.i)) + cuenta(m.ap.map((p) => p.i)),
   };

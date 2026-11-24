@@ -88,12 +88,6 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
   };
 
   let y = 12;
-  const asegurar = (alto: number) => {
-    if (y + alto > ALTO - PIE) {
-      doc.addPage();
-      y = M;
-    }
-  };
 
   // Encabezado: logotipo, título y folio
   const logo = await recurso('/pdf/logo.png');
@@ -122,29 +116,73 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
   linea(M, y, ANCHO - M, y, ARENA, 0.4);
   y += 5;
 
-  // Foto (izquierda) y puntuación (derecha)
+  // ---------------------------------------------------------------------------
+  // Todo cabe en UNA hoja: se mide el contenido y, si no cabe, se achica la foto,
+  // luego los renglones de la tabla y al final se recortan las notas.
+  // ---------------------------------------------------------------------------
   const anchoR = 70;
   const xR = ANCHO - M - anchoR;
-  const filasR: [string, string, boolean][] = [
-    ['Abertura interior', formato(d.abertura ?? 0), false],
-    ...(r.creditoAbertura < (d.abertura ?? 0) ? [['Crédito de abertura', formato(r.creditoAbertura), false] as [string, string, boolean]] : []),
-    ['Suma lado derecho', formato(r.sumaDer), false],
-    ['Suma lado izquierdo', formato(r.sumaIzq), false],
-    ['Número de puntas', `${r.puntasDer} der. · ${r.puntasIzq} izq.`, false],
+  const maxAnchoFoto = xR - 6 - M;
+  const filasR: [string, string][] = [
+    ['Abertura interior', formato(d.abertura ?? 0)],
+    ...(r.creditoAbertura < (d.abertura ?? 0) ? [['Crédito de abertura', formato(r.creditoAbertura)] as [string, string]] : []),
+    ['Suma lado derecho', formato(r.sumaDer)],
+    ['Suma lado izquierdo', formato(r.sumaIzq)],
+    ['Número de puntas', `${r.puntasDer} der. · ${r.puntasIzq} izq.`],
   ];
   const altoR = 9 + filasR.length * 5.4 + 13;
+  const propFoto = d.foto ? doc.getImageProperties(d.foto) : null;
+  const altoFotoCon = (max: number) => {
+    if (!propFoto) return 0;
+    const h = (maxAnchoFoto * propFoto.height) / propFoto.width;
+    return Math.min(h, Math.max(altoR, max));
+  };
+
+  const datos: [string, string][] = (
+    [
+      ['Cazador', d.cazador ?? ''],
+      ['Procedencia', d.procedencia ?? ''],
+      ['Fecha y hora', fechaHora(d.cazado_at)],
+      ['Lugar', d.lugar ?? ''],
+      ['Arma', nombreArma(d.arma)],
+      ['Guía', d.guia ?? ''],
+      ['Medido por', d.medido_por ?? ''],
+      ['Ejemplar', d.ejemplar ?? ''],
+    ] as [string, string][]
+  ).filter(([, v]) => v);
+  const col = (UTIL - 8) / 2;
+  fuenteTexto(9.5, true);
+  const lineasDato = datos.map(([, v]) => (doc.splitTextToSize(v, col - 25) as string[]).slice(0, 2));
+  let altoDatos = 2;
+  for (let i = 0; i < datos.length; i += 2) altoDatos += Math.max(5.2, 1 + Math.max(...lineasDato.slice(i, i + 2).map((l) => l.length)) * 4.2);
+
+  const ultimaG = d.medidas.g.reduce((u, p, i) => (p.d != null || p.i != null ? i : u), -1);
+  const gs = d.medidas.g.slice(0, Math.max(ultimaG + 1, 1));
+  const anormales = d.medidas.ap.filter((p) => p.d != null || p.i != null);
+  const renglones = 1 + 1 + gs.length + d.medidas.h.length + anormales.length + 1;
+
+  fuenteTexto(9);
+  let notas = d.notas ? (doc.splitTextToSize(d.notas, UTIL) as string[]) : [];
+  const altoNotas = (n: number) => (n ? 12 + n * 4.2 : 0);
+
+  const disponible = ALTO - PIE - 3 - y;
+  const necesita = (fotoMax: number, fila: number, nNotas: number) =>
+    Math.max(altoR, altoFotoCon(fotoMax)) + 6 + altoDatos + 6 + (fila + 0.6) + renglones * fila + altoNotas(nNotas);
+  let fotoMax = 70;
+  let ALTO_FILA = 4.9;
+  while (fotoMax > 40 && necesita(fotoMax, ALTO_FILA, notas.length) > disponible) fotoMax -= 5;
+  while (ALTO_FILA > 3.5 && necesita(fotoMax, ALTO_FILA, notas.length) > disponible) ALTO_FILA = Math.round((ALTO_FILA - 0.1) * 10) / 10;
+  while (notas.length && necesita(fotoMax, ALTO_FILA, notas.length) > disponible) notas = notas.slice(0, -1);
+  if (d.notas && notas.length && notas.join(' ').length < d.notas.trim().length - 1) notas[notas.length - 1] = notas[notas.length - 1].replace(/\s*\S*$/, ' …');
+  const tamFila = Math.min(9, ALTO_FILA * 1.85);
+
+  // Foto (izquierda) y puntuación (derecha)
   let altoFoto = 0;
-  if (d.foto) {
-    const p = doc.getImageProperties(d.foto);
-    const maxAncho = xR - 6 - M;
-    let w = maxAncho;
-    let h = (w * p.height) / p.width;
-    if (h > Math.max(altoR, 70)) {
-      h = Math.max(altoR, 70);
-      w = (h * p.width) / p.height;
-    }
-    const x = M + (maxAncho - w) / 2;
-    doc.addImage(d.foto, 'JPEG', x, y, w, h);
+  if (d.foto && propFoto) {
+    const h = altoFotoCon(fotoMax);
+    const w = (h * propFoto.width) / propFoto.height;
+    const x = M + (maxAnchoFoto - w) / 2;
+    doc.addImage(d.foto, 'JPEG', x, y, w, h, 'foto', 'FAST');
     doc.setDrawColor(ARENA[0], ARENA[1], ARENA[2]);
     doc.setLineWidth(0.3);
     doc.rect(x, y, w, h);
@@ -158,16 +196,15 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
   color(ARENA_TEXTO);
   doc.text('PUNTUACIÓN', xR + 4, y + 5);
   let yr = y + 10.5;
-  for (const [k, v, fuerte] of filasR) {
-    fuenteTexto(fuerte ? 9 : 8.5, fuerte);
-    color(fuerte ? BOSQUE : SECUNDARIO);
+  for (const [k, v] of filasR) {
+    fuenteTexto(8.5);
+    color(SECUNDARIO);
     doc.text(k, xR + 4, yr);
-    fuenteTexto(fuerte ? 11.5 : 9.5, true);
-    color(fuerte ? BOSQUE : TEXTO);
+    fuenteTexto(9.5, true);
+    color(TEXTO);
     doc.text(v, xR + anchoR - 4, yr, { align: 'right' });
     yr += 5.4;
   }
-  // Puntuación bruta destacada al pie del recuadro
   linea(xR + 4, yr - 2.6, xR + anchoR - 4, yr - 2.6, ARENA, 0.3);
   fuenteTexto(9, true);
   color(BOSQUE);
@@ -178,33 +215,20 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
   y += Math.max(altoFoto, altoR) + 6;
 
   // Datos de la caza, en dos columnas
-  const datos: [string, string][] = (
-    [
-      ['Cazador', d.cazador ?? ''],
-      ['Procedencia', d.procedencia ?? ''],
-      ['Fecha y hora', fechaHora(d.cazado_at)],
-      ['Lugar', d.lugar ?? ''],
-      ['Arma', nombreArma(d.arma)],
-      ['Guía', d.guia ?? ''],
-      ['Medido por', d.medido_por ?? ''],
-      ['Ejemplar', d.ejemplar ?? ''],
-    ] as [string, string][]
-  ).filter(([, v]) => v);
   fuenteTexto(8, true);
   color(ARENA_TEXTO);
   doc.text('DATOS DE LA CAZA', M, y);
   y += 2;
-  const col = (UTIL - 8) / 2;
   for (let i = 0; i < datos.length; i += 2) {
     let altoFila = 5.2;
-    datos.slice(i, i + 2).forEach(([k, v], j) => {
+    datos.slice(i, i + 2).forEach(([k], j) => {
       const x = M + j * (col + 8);
+      const lineas = lineasDato[i + j];
       fuenteTexto(8.5);
       color(SECUNDARIO);
       doc.text(k, x, y + 4);
       fuenteTexto(9.5, true);
       color(TEXTO);
-      const lineas = doc.splitTextToSize(v, col - 25) as string[];
       doc.text(lineas, x + 25, y + 4);
       altoFila = Math.max(altoFila, 1 + lineas.length * 4.2);
     });
@@ -214,78 +238,55 @@ export async function generarPdf(d: DatosPdf): Promise<Blob> {
   }
   y += 6;
 
-  // Tabla de medidas
-  // Measurement | Right | Left | Total (borde derecho de cada columna numérica). En inglés para el cliente.
+  // Tabla de medidas, en inglés para el cliente: Measurement | Right | Left | Total
   const fin = ANCHO - M;
   const bordes = [M + 112, M + 148, fin];
-  const ALTO_FILA = 4.9;
-  const encabezado = (titulos: string[]) => {
-    asegurar(ALTO_FILA * 2);
-    doc.setFillColor(BOSQUE[0], BOSQUE[1], BOSQUE[2]);
-    doc.rect(M, y, UTIL, ALTO_FILA + 0.6, 'F');
-    fuenteTexto(8, true);
-    doc.setTextColor(237, 230, 216);
-    titulos.forEach((tx, i) => doc.text(tx, i === 0 ? M + 2 : bordes[i - 1] - 3, y + 3.9, { align: i === 0 ? 'left' : 'right' }));
-    y += ALTO_FILA + 0.6;
-  };
+  doc.setFillColor(BOSQUE[0], BOSQUE[1], BOSQUE[2]);
+  doc.rect(M, y, UTIL, ALTO_FILA + 0.6, 'F');
+  fuenteTexto(Math.min(8, tamFila), true);
+  doc.setTextColor(237, 230, 216);
+  ['MEASUREMENT', 'RIGHT', 'LEFT', 'TOTAL'].forEach((tx, i) =>
+    doc.text(tx, i === 0 ? M + 2 : bordes[i - 1] - 3, y + ALTO_FILA * 0.8, { align: i === 0 ? 'left' : 'right' }),
+  );
+  y += ALTO_FILA + 0.6;
   const fila = (nombre: string, celdas: string[], fuerte = false) => {
-    asegurar(ALTO_FILA);
-    fuenteTexto(9, fuerte);
+    fuenteTexto(fuerte ? tamFila + 0.5 : tamFila, fuerte);
     color(fuerte ? BOSQUE : TEXTO);
-    doc.text(nombre, M + 2, y + 3.7);
-    celdas.forEach((c, i) => doc.text(c, bordes[i] - 3, y + 3.7, { align: 'right' }));
+    doc.text(nombre, M + 2, y + ALTO_FILA * 0.76);
+    celdas.forEach((c, i) => doc.text(c, bordes[i] - 3, y + ALTO_FILA * 0.76, { align: 'right' }));
     y += ALTO_FILA;
-    linea(M, y, fin, y);
+    linea(M, y, fin, y, fuerte ? ARENA : LINEA, fuerte ? 0.3 : 0.2);
   };
   const suma = (p: Par) => (p.d == null && p.i == null ? '' : formato((p.d ?? 0) + (p.i ?? 0)));
 
-  encabezado(['MEASUREMENT', 'RIGHT', 'LEFT', 'TOTAL']);
   fila(r.creditoAbertura < (d.abertura ?? 0) ? `Inside Spread  (${formato(d.abertura)}, credit limited to longer main beam)` : 'Inside Spread', ['', '', formato(r.creditoAbertura)]);
   fila('Main Beam Length', [formato(d.medidas.viga.d), formato(d.medidas.viga.i), suma(d.medidas.viga)]);
-  const ultimaG = d.medidas.g.reduce((u, p, i) => (p.d != null || p.i != null ? i : u), -1);
-  d.medidas.g.slice(0, Math.max(ultimaG + 1, 1)).forEach((p, i) => fila(`G${i + 1}  Point Length`, [formato(p.d), formato(p.i), suma(p)]));
+  gs.forEach((p, i) => fila(`G${i + 1}  Point Length`, [formato(p.d), formato(p.i), suma(p)]));
   d.medidas.h.forEach((p, i) => fila(`H${i + 1}  Circumference`, [formato(p.d), formato(p.i), suma(p)]));
+  anormales.forEach((p, i) => fila(`AP${i + 1}  Abnormal Point`, [formato(p.d), formato(p.i), suma(p)]));
   fila('GROSS SCORE', [formato(r.sumaDer), formato(r.sumaIzq), formato(r.bruta)], true);
-  y += 4;
 
-  const anormales = d.medidas.ap.filter((p) => p.d != null || p.i != null);
-  encabezado(['ABNORMAL POINTS', 'RIGHT', 'LEFT', 'TOTAL']);
-  if (!anormales.length) {
-    fila('No abnormal points', ['', '', '']);
-  } else {
-    anormales.forEach((p, i) => fila(`AP${i + 1}`, [formato(p.d), formato(p.i), formato((p.d ?? 0) + (p.i ?? 0))]));
-    fila('Total', [formato(r.anormalesDer), formato(r.anormalesIzq), formato(r.anormales)], true);
-  }
-
-  if (d.notas) {
+  if (notas.length) {
     y += 4;
-    fuenteTexto(9);
-    const lineas = doc.splitTextToSize(d.notas, UTIL) as string[];
-    asegurar(6 + lineas.length * 4.2);
     fuenteTexto(8, true);
     color(ARENA_TEXTO);
     doc.text('NOTAS', M, y + 3);
     fuenteTexto(9);
     color(TEXTO);
-    doc.text(lineas, M, y + 8);
-    y += 8 + lineas.length * 4.2;
+    doc.text(notas, M, y + 8);
   }
 
-  // Pie en cada hoja
-  const paginas = doc.getNumberOfPages();
-  for (let i = 1; i <= paginas; i++) {
-    doc.setPage(i);
-    linea(M, ALTO - 13, ANCHO - M, ALTO - 13, ARENA, 0.3);
-    fuenteTexto(7.5);
-    color(SECUNDARIO);
-    doc.text(
-      'Medición realizada por Rancho Las Lomas con el método Boone and Crockett. No es un registro oficial del Boone and Crockett Club.',
-      ANCHO / 2,
-      ALTO - 9,
-      { align: 'center' },
-    );
-    doc.text(`Rancho Las Lomas  ·  ${folioMedicion(d.folio)}${paginas > 1 ? `  ·  Hoja ${i} de ${paginas}` : ''}`, ANCHO / 2, ALTO - 5.5, { align: 'center' });
-  }
+  // Pie
+  linea(M, ALTO - 13, ANCHO - M, ALTO - 13, ARENA, 0.3);
+  fuenteTexto(7.5);
+  color(SECUNDARIO);
+  doc.text(
+    'Medición realizada por Rancho Las Lomas con el método Boone and Crockett (puntuación bruta). No es un registro oficial del Boone and Crockett Club.',
+    ANCHO / 2,
+    ALTO - 9,
+    { align: 'center' },
+  );
+  doc.text(`Rancho Las Lomas  ·  ${folioMedicion(d.folio)}`, ANCHO / 2, ALTO - 5.5, { align: 'center' });
 
   return doc.output('blob');
 }

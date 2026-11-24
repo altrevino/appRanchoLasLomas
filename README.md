@@ -209,11 +209,11 @@ Todo se actualiza al moverte. Cierra con **×**.
 2. **Medidas** en pulgadas y octavos (primer cuadro pulgadas, segundo octavos de 0 a 7): abertura interior, y de cada lado viga principal, G1 a G5, H1 a H4 y puntas anormales AP1 a AP3. **+ Agregar G** y **+ Agregar punta anormal** agregan renglones.
 3. La puntuación se recalcula al escribir, con el método Boone and Crockett:
    - crédito de abertura = abertura, sin pasar de la viga más larga;
-   - bruta = crédito + viga + G + H de ambos lados;
+   - bruta = crédito + viga + G + H + puntas anormales de ambos lados (todo suma, sin deducciones; es la que cobra el rancho);
    - diferencias = suma de |derecho − izquierdo| de viga, cada G y cada H;
-   - neta típica = bruta − diferencias − anormales; neta no típica = bruta − diferencias + anormales.
+   - como referencia para el admin (no van en el PDF): diferencias, neta típica y neta no típica.
 4. **Ejemplar de la bitácora (opcional)**: al guardar, el ejemplar queda **Cazado** con la puntuación bruta como puntuación real, la fecha y el cazador.
-5. **Preparar PDF** y luego **Compartir PDF** (WhatsApp, correo, AirDrop) o **Descargar PDF**. Es una hoja carta con el logotipo, la foto, la puntuación, los datos de la caza y la tabla de medidas. El PDF usa lo último que guardaste.
+5. **Preparar PDF** y luego **Compartir PDF** (WhatsApp, correo, AirDrop) o **Descargar PDF**. Siempre es una sola hoja carta (si hay muchas puntas o notas largas, achica la foto y los renglones): logotipo, foto, puntuación bruta, datos de la caza y la tabla de medidas en inglés. El PDF usa lo último que guardaste.
 
 Cada medición recibe un folio (M-001, M-002…). Se puede editar o borrar después.
 

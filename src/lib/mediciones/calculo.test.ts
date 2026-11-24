@@ -14,10 +14,10 @@ const m: Medidas = {
 test('puntuación B&C completa', () => {
   const r = calcular(148, m);
   assert.equal(r.creditoAbertura, 148);
-  assert.equal(r.sumaDer, 538);
+  assert.equal(r.sumaDer, 562); // 538 típicas + 24 anormal
   assert.equal(r.sumaIzq, 512);
-  assert.equal(r.bruta, 1198);
-  assert.equal(formato(r.bruta), '149 6/8');
+  assert.equal(r.bruta, 1222);
+  assert.equal(formato(r.bruta), '152 6/8');
   assert.equal(r.diferencias, 30);
   assert.equal(r.anormales, 24);
   assert.equal(formato(r.netaTipica), '143');
