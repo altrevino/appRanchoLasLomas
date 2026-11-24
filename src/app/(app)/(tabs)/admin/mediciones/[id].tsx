@@ -416,26 +416,26 @@ export default function EditarMedicion() {
           <Titulo nivel={2}>Medidas</Titulo>
           <Text style={[tipografia.secundario, { color: t.textoSecundario }]}>Pulgadas en el primer cuadro y octavos (0 a 7) en el segundo.</Text>
           <View style={estilos.fila}>
-            <Text style={[tipografia.cuerpoFuerte, { color: t.texto, flex: 1 }]}>Abertura interior</Text>
+            <Text style={[tipografia.cuerpoFuerte, { color: t.texto, flex: 1 }]}>Inside Spread</Text>
             <View style={{ width: 150 }}>
-              <CeldaMedida etiqueta="Abertura interior" valor={abertura} onChange={(c) => (setAbertura(c), tocar())} />
+              <CeldaMedida etiqueta="Inside Spread" valor={abertura} onChange={(c) => (setAbertura(c), tocar())} />
             </View>
           </View>
         </View>
 
         <View style={estilos.bloque}>
           <EncabezadoLados />
-          <FilaMedida nombre="Viga" par={filas.viga} onChange={(p) => (setFilas((f) => ({ ...f, viga: p })), tocar())} />
-          <Text style={[tipografia.etiqueta, { color: t.acentoTexto, marginTop: espacio.s }]}>PUNTAS (G)</Text>
+          <FilaMedida nombre="Main Beam" par={filas.viga} onChange={(p) => (setFilas((f) => ({ ...f, viga: p })), tocar())} />
+          <Text style={[tipografia.etiqueta, { color: t.acentoTexto, marginTop: espacio.s }]}>POINTS (G)</Text>
           {filas.g.map((p, i) => (
             <FilaMedida key={`g${i}`} nombre={`G${i + 1}`} par={p} onChange={(n) => cambiar('g', i, n)} />
           ))}
           <BotonAgregar onPress={() => setFilas((f) => ({ ...f, g: [...f.g, parVacio()] }))}>Agregar G</BotonAgregar>
-          <Text style={[tipografia.etiqueta, { color: t.acentoTexto, marginTop: espacio.s }]}>CIRCUNFERENCIAS (H)</Text>
+          <Text style={[tipografia.etiqueta, { color: t.acentoTexto, marginTop: espacio.s }]}>CIRCUMFERENCES (H)</Text>
           {filas.h.map((p, i) => (
             <FilaMedida key={`h${i}`} nombre={`H${i + 1}`} par={p} onChange={(n) => cambiar('h', i, n)} />
           ))}
-          <Text style={[tipografia.etiqueta, { color: t.acentoTexto, marginTop: espacio.s }]}>PUNTAS ANORMALES</Text>
+          <Text style={[tipografia.etiqueta, { color: t.acentoTexto, marginTop: espacio.s }]}>ABNORMAL POINTS</Text>
           {filas.ap.map((p, i) => (
             <FilaMedida key={`ap${i}`} nombre={`AP${i + 1}`} par={p} onChange={(n) => cambiar('ap', i, n)} />
           ))}

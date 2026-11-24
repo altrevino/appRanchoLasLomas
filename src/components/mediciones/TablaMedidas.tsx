@@ -46,7 +46,7 @@ export function CeldaMedida({ valor, onChange, etiqueta }: { valor: Captura; onC
 export function FilaMedida({ nombre, par, onChange }: { nombre: string; par: ParCaptura; onChange: (p: ParCaptura) => void }) {
   return (
     <View style={estilos.fila}>
-      <Text style={[tipografia.cuerpoFuerte, estilos.nombre, { color: t.texto }]}>{nombre}</Text>
+      <Text style={[tipografia.cuerpoFuerte, estilos.nombre, { color: t.texto }, nombre.length > 4 && { fontSize: 14, lineHeight: 17 }]}>{nombre}</Text>
       <CeldaMedida etiqueta={`${nombre} derecho`} valor={par.d} onChange={(d) => onChange({ ...par, d })} />
       <CeldaMedida etiqueta={`${nombre} izquierdo`} valor={par.i} onChange={(i) => onChange({ ...par, i })} />
     </View>
@@ -57,8 +57,8 @@ export function EncabezadoLados() {
   return (
     <View style={estilos.fila}>
       <View style={estilos.nombre} />
-      <Text style={[tipografia.etiqueta, estilos.lado, { color: t.acentoTexto }]}>DERECHO</Text>
-      <Text style={[tipografia.etiqueta, estilos.lado, { color: t.acentoTexto }]}>IZQUIERDO</Text>
+      <Text style={[tipografia.etiqueta, estilos.lado, { color: t.acentoTexto }]}>RIGHT</Text>
+      <Text style={[tipografia.etiqueta, estilos.lado, { color: t.acentoTexto }]}>LEFT</Text>
     </View>
   );
 }
@@ -73,7 +73,7 @@ export function BotonAgregar({ children, onPress }: { children: string; onPress:
 
 const estilos = StyleSheet.create({
   fila: { flexDirection: 'row', alignItems: 'center', gap: espacio.s },
-  nombre: { width: 46 },
+  nombre: { width: 56 },
   lado: { flex: 1, textAlign: 'center' },
   celda: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: espacio.xs },
   entrada: {
